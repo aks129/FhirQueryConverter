@@ -8,14 +8,17 @@ include FHIRHelpers version '4.0.1' called FHIRHelpers
 
 parameter "Measurement Period" Interval<DateTime>
 
+// Define the initial population: adult female patients
 define "Initial Population":
   [Patient] P
     where P.gender = 'female'
       and AgeInYearsAt(end of "Measurement Period") >= 18
 
+// Denominator equals initial population for this measure
 define "Denominator":
   "Initial Population"
 
+// Numerator: patients with elevated heart rate (>100 bpm)
 define "Numerator":
   "Denominator" D
     with [Observation: "Heart Rate"] O

@@ -6,8 +6,8 @@ import { OutputPanel } from "@/components/output-panel";
 import { useCqlEvaluation } from "@/hooks/use-cql-evaluation";
 import { useSqlEvaluation } from "@/hooks/use-sql-evaluation";
 import { FhirBundle } from "@/types/fhir";
-import { sampleCqlCode } from "@/lib/sample-data";
-import { Play, ServerCog, Stethoscope } from "lucide-react";
+import { sampleCqlCode, diabetesCareBundle } from "@/lib/sample-data";
+import { Play, ServerCog, Stethoscope, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
@@ -72,6 +72,54 @@ export default function Home() {
     await convertAndEvaluate(cqlCode, fhirBundle);
   };
 
+  const runSampleExample = async () => {
+    try {
+      // Load sample data if not already loaded
+      if (!fhirBundle) {
+        setFhirBundle(diabetesCareBundle);
+        toast({
+          title: "Sample Data Loaded",
+          description: "Loaded diabetes care sample with 3 patients and heart rate observations",
+        });
+        
+        // Small delay to ensure state is updated
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      // Ensure we have sample CQL
+      if (!cqlCode.trim()) {
+        setCqlCode(sampleCqlCode);
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      toast({
+        title: "Running Example Demonstration",
+        description: "Running both CQL and SQL evaluations automatically",
+      });
+
+      // Run CQL evaluation first
+      await evaluateCql(cqlCode || sampleCqlCode, fhirBundle || diabetesCareBundle);
+      
+      // Wait a moment between evaluations
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Run SQL evaluation
+      await convertAndEvaluate(cqlCode || sampleCqlCode, fhirBundle || diabetesCareBundle);
+
+      toast({
+        title: "Example Complete!",
+        description: "Both evaluation methods completed. Check the output tabs to compare results.",
+      });
+
+    } catch (error) {
+      toast({
+        title: "Example Failed",
+        description: "There was an error running the example demonstration",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
       {/* Header */}
@@ -117,6 +165,21 @@ export default function Home() {
                 bundle={fhirBundle}
                 onBundleChange={setFhirBundle}
               />
+
+              {/* Quick Demo Button */}
+              <div className="mb-4">
+                <Button
+                  onClick={runSampleExample}
+                  disabled={cqlLoading || sqlLoading}
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 border-2 border-purple-400"
+                >
+                  <Zap className="w-4 h-4 mr-2" />
+                  {(cqlLoading || sqlLoading) ? "Running Example..." : "Use Sample & Run Example"}
+                </Button>
+                <p className="text-xs text-gray-600 mt-2 text-center">
+                  Automatically loads sample data and runs both evaluation methods
+                </p>
+              </div>
 
               {/* Execution Buttons */}
               <div className="space-y-3">
