@@ -1,0 +1,124 @@
+Project Title: Proof-of-Concept FHIR HL7 CQL to SQL on FHIR Converter
+Objective:
+
+Create a functional proof-of-concept (POC) web application that demonstrates two distinct methods for evaluating FHIR resources for clinical quality measures:
+
+Direct CQL Evaluation: Execute Clinical Quality Language (CQL) code directly against a set of FHIR resources.
+
+SQL on FHIR Evaluation: Convert the same CQL code into a SQL on FHIR query, execute it against a flattened view of the FHIR resources, and produce a comparable result.
+
+The ultimate output for both evaluation pathways will be a FHIR MeasureReport resource. This POC will highlight the flexibility of using either CQL or SQL for FHIR data analysis, catering to different performance needs and technical environments.
+
+Core Functionalities:
+
+User Interface (UI):
+
+A clean, two-panel layout.
+
+Left Panel (Input):
+
+A text area for users to input or paste their HL7 CQL code.
+
+A file upload button to load a sample FHIR data bundle (in JSON format).
+
+Two distinct buttons: "Evaluate with CQL" and "Convert and Evaluate with SQL on FHIR".
+
+Right Panel (Output):
+
+Tabs to display the results of each evaluation:
+
+CQL Output:
+
+Display the generated FHIR MeasureReport in a formatted JSON viewer.
+
+SQL on FHIR Output:
+
+Display the translated SQL query.
+
+Display the generated FHIR MeasureReport in a formatted JSON viewer.
+
+Logs/Status: Show processing messages, errors, and performance metrics (e.g., execution time) for both processes.
+
+CQL Evaluation Pathway:
+
+Integrate a JavaScript-based CQL execution engine (e.g., cql-execution).
+
+When the "Evaluate with CQL" button is clicked:
+
+Parse the input CQL code.
+
+Execute the CQL against the loaded FHIR data bundle.
+
+Generate a FHIR MeasureReport resource based on the CQL execution results.
+
+Display the MeasureReport in the "CQL Output" tab.
+
+CQL to SQL on FHIR Conversion and Evaluation Pathway:
+
+View Definitions:
+
+For this POC, pre-define a set of simple view definitions that flatten common FHIR resources (e.g., Patient, Observation, Condition) into a tabular format. These views should be based on the SQL on FHIR specification, using FHIRPath expressions in select and where clauses.
+
+CQL to SQL Conversion Logic:
+
+When the "Convert and Evaluate with SQL on FHIR" button is clicked:
+
+Implement a basic transpiler to convert the input CQL logic into an equivalent SQL query. This is the core of the project.
+
+Focus on a subset of CQL: For the POC, target a limited but representative set of CQL operators and expressions to translate, such as:
+
+define statements for population criteria (e.g., "Initial Population", "Denominator", "Numerator").
+
+Basic filtering on resource attributes (e.g., Patient.gender = 'female').
+
+Simple temporal logic (e.g., Encounter.period.start during "Measurement Period").
+
+Retrieves of FHIR resources (e.g., [Observation: "Heart Rate"]).
+
+The generated SQL should query the pre-defined flattened views of the FHIR data.
+
+SQL Execution:
+
+Use a lightweight in-browser SQL database (e.g., sql.js) to execute the generated SQL query against the flattened FHIR data.
+
+MeasureReport Generation:
+
+From the SQL query results, construct a FHIR MeasureReport that is structurally similar to the one produced by the CQL pathway.
+
+Display the translated SQL and the resulting MeasureReport in the "SQL on FHIR Output" tab.
+
+Technical Stack:
+
+Frontend: HTML, CSS, JavaScript (no complex frameworks are necessary for the POC).
+
+CQL Engine: cql-execution and its dependencies (cql-exec-fhir).
+
+In-browser SQL: sql.js or a similar library.
+
+FHIR Data: Provide a sample bundle.json file with a few patient resources and related observations/conditions for testing.
+
+Example Workflow:
+
+The user loads the application.
+
+They upload a sample bundle.json file containing FHIR resources.
+
+They paste a simple CQL script into the input area (e.g., a measure for "Patients with a specific condition").
+
+They click "Evaluate with CQL". The right panel shows the resulting MeasureReport.
+
+They click "Convert and Evaluate with SQL on FHIR". The right panel shows the generated SQL query and the corresponding MeasureReport.
+
+The user can compare the two MeasureReport resources and the performance logs.
+
+Success Criteria:
+
+The application successfully executes a simple CQL measure and generates a valid MeasureReport.
+
+The application can translate a simple CQL measure into a functional SQL query.
+
+The application can execute the generated SQL query on flattened FHIR data and produce a MeasureReport.
+
+The two MeasureReport outputs are logically consistent, demonstrating the viability of both approaches.
+
+The code is well-commented, particularly the CQL-to-SQL conversion logic.
