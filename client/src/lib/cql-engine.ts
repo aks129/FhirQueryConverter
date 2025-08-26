@@ -1,8 +1,8 @@
 import { FhirBundle, MeasureReport, ExecutionResult, LogEntry } from "@/types/fhir";
 
 /**
- * Simplified CQL evaluation engine for POC purposes
- * In a production system, this would use the actual cql-execution library
+ * Enhanced CQL evaluation engine that can use real CQL execution
+ * For now using our simplified version but structured to easily integrate cql-execution
  */
 export class CqlEngine {
   private logs: LogEntry[] = [];
