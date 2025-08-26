@@ -60,6 +60,7 @@ Preferred communication style: Simple, everyday language.
 - **FHIR Upload**: Drag-and-drop file upload with validation
 - **JSON Viewer**: Formatted JSON display with copy functionality
 - **Output Panel**: Tabbed interface showing results from both evaluation methods
+- **FAQ Page**: Comprehensive architecture documentation with step-by-step backend methodology explanations
 
 ## Data Flow
 

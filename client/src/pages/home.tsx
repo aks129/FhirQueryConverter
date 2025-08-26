@@ -7,8 +7,9 @@ import { useCqlEvaluation } from "@/hooks/use-cql-evaluation";
 import { useSqlEvaluation } from "@/hooks/use-sql-evaluation";
 import { FhirBundle } from "@/types/fhir";
 import { sampleCqlCode, diabetesCareBundle } from "@/lib/sample-data";
-import { Play, ServerCog, Stethoscope, Zap } from "lucide-react";
+import { Play, ServerCog, Stethoscope, Zap, HelpCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Link } from "wouter";
 
 export default function Home() {
   const [cqlCode, setCqlCode] = useState(sampleCqlCode);
@@ -138,6 +139,17 @@ export default function Home() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              <Link href="/faq">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex items-center gap-2"
+                  data-testid="button-faq"
+                >
+                  <HelpCircle className="w-4 h-4" />
+                  FAQ & Architecture
+                </Button>
+              </Link>
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-green-600 rounded-full"></div>
                 <span className="text-sm text-gray-600">System Ready</span>
