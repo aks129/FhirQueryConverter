@@ -1,0 +1,15 @@
+.git
+.claude
+node_modules
+.env.local
+.env
+*.log
+.DS_Store
+coverage
+.vscode
+.idea
+*.swp
+*.swo
+server
+client/src
+migrations
