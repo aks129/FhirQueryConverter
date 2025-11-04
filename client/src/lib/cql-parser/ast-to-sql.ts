@@ -449,25 +449,177 @@ DiagnosticReport_view AS (
     // Map CQL functions to SQL
     switch (name.toLowerCase()) {
       case 'ageinyearsat':
-        // Simplified: return age column
+        // Calculate age in years at a specific date
+        // AgeInYearsAt(birthDate, asOfDate)
+        if (args.length >= 1) {
+          const asOfDate = args.length >= 2
+            ? args[1]
+            : `'${new Date().toISOString().split('T')[0]}'`; // Use current date if not specified
+
+          // SQL to calculate age: (asOfDate - birthDate) / 365.25
+          // Using JULIANDAY for SQLite
+          return `CAST((JULIANDAY(${asOfDate}) - JULIANDAY(birthDate)) / 365.25 AS INTEGER)`;
+        }
+        // Fallback to age column if no arguments
         return 'age';
 
+      case 'ageinmonthsat':
+        // Calculate age in months at a specific date
+        if (args.length >= 1) {
+          const asOfDate = args.length >= 2
+            ? args[1]
+            : `'${new Date().toISOString().split('T')[0]}'`;
+          return `CAST((JULIANDAY(${asOfDate}) - JULIANDAY(birthDate)) / 30.44 AS INTEGER)`;
+        }
+        return `CAST(age * 12 AS INTEGER)`;
+
+      case 'ageindaysat':
+        // Calculate age in days at a specific date
+        if (args.length >= 1) {
+          const asOfDate = args.length >= 2
+            ? args[1]
+            : `'${new Date().toISOString().split('T')[0]}'`;
+          return `CAST(JULIANDAY(${asOfDate}) - JULIANDAY(birthDate) AS INTEGER)`;
+        }
+        return `CAST(age * 365.25 AS INTEGER)`;
+
+      // Aggregation functions
       case 'count':
         return `COUNT(${args[0] || '*'})`;
-
-      case 'avg':
-        return `AVG(${args[0]})`;
-
-      case 'max':
-        return `MAX(${args[0]})`;
-
-      case 'min':
-        return `MIN(${args[0]})`;
 
       case 'sum':
         return `SUM(${args[0]})`;
 
+      case 'avg':
+      case 'average':
+        return `AVG(${args[0]})`;
+
+      case 'max':
+      case 'maximum':
+        return `MAX(${args[0]})`;
+
+      case 'min':
+      case 'minimum':
+        return `MIN(${args[0]})`;
+
+      case 'median':
+        // SQLite doesn't have built-in MEDIAN, use approximation with percentile
+        return `(SELECT AVG(${args[0]}) FROM (SELECT ${args[0]} FROM ${args[0]} ORDER BY ${args[0]} LIMIT 2 - (SELECT COUNT(*) FROM ${args[0]}) % 2 OFFSET (SELECT (COUNT(*) - 1) / 2 FROM ${args[0]})))`;
+
+      case 'stdev':
+      case 'stddev':
+      case 'standarddeviation':
+        // Standard deviation
+        return `(SELECT SQRT(AVG((${args[0]} - sub.mean) * (${args[0]} - sub.mean))) FROM (SELECT AVG(${args[0]}) as mean FROM ${args[0]}) sub)`;
+
+      // String functions
+      case 'length':
+        return `LENGTH(${args[0]})`;
+
+      case 'upper':
+        return `UPPER(${args[0]})`;
+
+      case 'lower':
+        return `LOWER(${args[0]})`;
+
+      case 'substring':
+        // Substring(string, startIndex, length)
+        if (args.length >= 2) {
+          return args.length >= 3
+            ? `SUBSTR(${args[0]}, ${args[1]}, ${args[2]})`
+            : `SUBSTR(${args[0]}, ${args[1]})`;
+        }
+        return args[0];
+
+      case 'indexof':
+        // Position of substring in string (1-indexed in SQL)
+        return `INSTR(${args[0]}, ${args[1]})`;
+
+      // Date/time functions
+      case 'now':
+        return `DATETIME('now')`;
+
+      case 'today':
+        return `DATE('now')`;
+
+      case 'year':
+        return `CAST(STRFTIME('%Y', ${args[0]}) AS INTEGER)`;
+
+      case 'month':
+        return `CAST(STRFTIME('%m', ${args[0]}) AS INTEGER)`;
+
+      case 'day':
+        return `CAST(STRFTIME('%d', ${args[0]}) AS INTEGER)`;
+
+      case 'hour':
+        return `CAST(STRFTIME('%H', ${args[0]}) AS INTEGER)`;
+
+      case 'minute':
+        return `CAST(STRFTIME('%M', ${args[0]}) AS INTEGER)`;
+
+      case 'second':
+        return `CAST(STRFTIME('%S', ${args[0]}) AS INTEGER)`;
+
+      // Temporal expressions parsed as functions
+      case 'start of':
+      case 'end of':
+        // These come from the parser's temporal expression handling
+        if (args.length > 0) {
+          // For now, just return the argument
+          // In full implementation, would extract start/end of period
+          return args[0];
+        }
+        return 'NULL';
+
+      // List functions
+      case 'first':
+        return `(SELECT ${args[0]} LIMIT 1)`;
+
+      case 'last':
+        return `(SELECT ${args[0]} ORDER BY rowid DESC LIMIT 1)`;
+
+      case 'distinct':
+        return `DISTINCT ${args[0]}`;
+
+      // Null handling
+      case 'isnull':
+      case 'is null':
+        return `${args[0]} IS NULL`;
+
+      case 'coalesce':
+        return `COALESCE(${args.join(', ')})`;
+
+      // Math functions
+      case 'abs':
+        return `ABS(${args[0]})`;
+
+      case 'ceiling':
+      case 'ceil':
+        return `CEILING(${args[0]})`;
+
+      case 'floor':
+        return `FLOOR(${args[0]})`;
+
+      case 'round':
+        return args.length >= 2
+          ? `ROUND(${args[0]}, ${args[1]})`
+          : `ROUND(${args[0]})`;
+
+      case 'power':
+        return `POWER(${args[0]}, ${args[1]})`;
+
+      case 'sqrt':
+        return `SQRT(${args[0]})`;
+
+      // Logical functions
+      case 'not':
+        return `NOT ${args[0]}`;
+
+      case 'exists':
+        return `EXISTS ${args[0]}`;
+
       default:
+        this.log(`Warning: Unmapped function: ${name}`);
         return `${name}(${args.join(', ')})`;
     }
   }
