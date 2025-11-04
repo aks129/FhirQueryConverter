@@ -52,6 +52,7 @@ export enum TokenType {
   AS = 'AS',
   INTERVAL = 'INTERVAL',
   OF = 'OF',
+  START = 'START',
   END = 'END',
 
   // Literals
@@ -127,6 +128,7 @@ export class CqlTokenizer {
     ['as', TokenType.AS],
     ['interval', TokenType.INTERVAL],
     ['of', TokenType.OF],
+    ['start', TokenType.START],
     ['end', TokenType.END],
     ['during', TokenType.DURING],
     ['before', TokenType.BEFORE],

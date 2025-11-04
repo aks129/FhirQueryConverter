@@ -140,7 +140,16 @@ DiagnosticReport_view AS (
     const cteName = define.name.replace(/\s+/g, '');
     this.context.cteNames.add(cteName);
 
-    const sqlExpression = this.generateExpression(define.expression);
+    this.log(`Generating CTE for "${define.name}", expression type: ${define.expression.type}`);
+
+    // Special handling for Identifier expressions at the top level
+    if (define.expression.type === 'Identifier') {
+      const refName = (define.expression as IdentifierNode).name.replace(/\s+/g, '');
+      this.log(`  -> Identifier reference to "${refName}"`);
+      return `${cteName} AS (\n  SELECT patient_id FROM ${refName}\n)`;
+    }
+
+    const sqlExpression = this.generateExpression(define.expression, '  ');
 
     return `${cteName} AS (\n${sqlExpression}\n)`;
   }
@@ -197,11 +206,13 @@ DiagnosticReport_view AS (
       sourceTable = `${query.source.name}_view`;
     }
 
-    lines.push(`${indent}SELECT ${alias}.id AS patient_id`);
-
     // Add additional fields if needed
-    if (query.source.type === 'ResourceReference' &&
-        query.source.resourceType === 'Patient') {
+    const hasAdditionalFields = query.source.type === 'ResourceReference' &&
+        query.source.resourceType === 'Patient';
+
+    lines.push(`${indent}SELECT ${alias}.id AS patient_id${hasAdditionalFields ? ',' : ''}`);
+
+    if (hasAdditionalFields) {
       lines.push(`${indent}       ${alias}.gender,`);
       lines.push(`${indent}       ${alias}.age,`);
       lines.push(`${indent}       ${alias}.birthDate`);

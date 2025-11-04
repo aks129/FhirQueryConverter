@@ -324,12 +324,26 @@ export class CqlParser {
   }
 
   private parsePrimary(): CqlExpressionNode {
-    // String literal
+    // String token - could be identifier (double quotes) or literal (single quotes)
+    // In CQL, "text" is an identifier, 'text' is a string literal
+    // Since our tokenizer doesn't distinguish, treat STRING as identifier if it matches a define
     if (this.match(TokenType.STRING)) {
+      const value = this.previous().value;
+
+      // Check if this could be an identifier reference to a define/parameter
+      // If it contains spaces or special chars, likely an identifier, not a literal
+      if (value.includes(' ') || /^[A-Z]/.test(value)) {
+        return {
+          type: 'Identifier',
+          name: value,
+        };
+      }
+
+      // Otherwise treat as string literal
       return {
         type: 'Literal',
         valueType: 'string',
-        value: this.previous().value,
+        value,
       };
     }
 
@@ -385,6 +399,20 @@ export class CqlParser {
       const expr = this.parseExpression();
       this.expect(TokenType.RIGHT_PAREN);
       return expr;
+    }
+
+    // Temporal expressions: end of, start of
+    if (this.matchAny(TokenType.END, TokenType.START)) {
+      const temporal = this.previous().value; // 'end' or 'start'
+      this.expect(TokenType.OF); // expect 'of' keyword
+      const expr = this.parsePrimary(); // parse the expression after 'of'
+
+      // For now, treat this as a function call
+      return {
+        type: 'FunctionCall',
+        name: `${temporal} of`,
+        arguments: [expr],
+      };
     }
 
     // Identifier or query
