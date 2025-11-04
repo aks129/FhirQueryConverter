@@ -185,10 +185,13 @@ export class SqlTranspiler {
         CREATE TABLE Observation (
           id TEXT PRIMARY KEY,
           subject_id TEXT,
+          code TEXT,
+          code_system TEXT,
           code_text TEXT,
           effective_datetime TEXT,
           value_quantity REAL,
-          value_unit TEXT
+          value_unit TEXT,
+          status TEXT
         )
       `);
       this.addLog('INFO', 'Created Observation table');
@@ -196,9 +199,9 @@ export class SqlTranspiler {
       // Insert observations
       views.observations.forEach((o: any) => {
         db.run(
-          'INSERT INTO Observation (id, subject_id, code_text, effective_datetime, value_quantity, value_unit) VALUES (?, ?, ?, ?, ?, ?)',
-          [o.id, o.subject_id, o.code_text || null, o.effective_datetime || null,
-           o.value_quantity || null, o.value_unit || null]
+          'INSERT INTO Observation (id, subject_id, code, code_system, code_text, effective_datetime, value_quantity, value_unit, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          [o.id, o.subject_id, o.code || null, o.code_system || null, o.code_text || null, o.effective_datetime || null,
+           o.value_quantity || null, o.value_unit || null, o.status || null]
         );
       });
       this.addLog('SUCCESS', `Inserted ${views.observations.length} observations into database`);
@@ -208,9 +211,12 @@ export class SqlTranspiler {
         CREATE TABLE Condition (
           id TEXT PRIMARY KEY,
           subject_id TEXT,
+          code TEXT,
+          code_system TEXT,
           code_text TEXT,
           onset_datetime TEXT,
-          clinical_status TEXT
+          clinical_status TEXT,
+          verification_status TEXT
         )
       `);
       this.addLog('INFO', 'Created Condition table');
@@ -218,8 +224,8 @@ export class SqlTranspiler {
       // Insert conditions
       views.conditions.forEach((c: any) => {
         db.run(
-          'INSERT INTO Condition (id, subject_id, code_text, onset_datetime, clinical_status) VALUES (?, ?, ?, ?, ?)',
-          [c.id, c.subject_id, c.code_text || null, c.onset_datetime || null, c.clinical_status || null]
+          'INSERT INTO Condition (id, subject_id, code, code_system, code_text, onset_datetime, clinical_status, verification_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+          [c.id, c.subject_id, c.code || null, c.code_system || null, c.code_text || null, c.onset_datetime || null, c.clinical_status || null, c.verification_status || null]
         );
       });
       this.addLog('SUCCESS', `Inserted ${views.conditions.length} conditions into database`);
@@ -229,6 +235,8 @@ export class SqlTranspiler {
         CREATE TABLE Procedure (
           id TEXT PRIMARY KEY,
           subject_id TEXT,
+          code TEXT,
+          code_system TEXT,
           code_text TEXT,
           performed_datetime TEXT,
           status TEXT
@@ -239,8 +247,8 @@ export class SqlTranspiler {
       // Insert procedures
       views.procedures.forEach((p: any) => {
         db.run(
-          'INSERT INTO Procedure (id, subject_id, code_text, performed_datetime, status) VALUES (?, ?, ?, ?, ?)',
-          [p.id, p.subject_id, p.code_text || null, p.performed_datetime || null, p.status || null]
+          'INSERT INTO Procedure (id, subject_id, code, code_system, code_text, performed_datetime, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
+          [p.id, p.subject_id, p.code || null, p.code_system || null, p.code_text || null, p.performed_datetime || null, p.status || null]
         );
       });
       this.addLog('SUCCESS', `Inserted ${views.procedures.length} procedures into database`);
@@ -250,6 +258,8 @@ export class SqlTranspiler {
         CREATE TABLE MedicationRequest (
           id TEXT PRIMARY KEY,
           subject_id TEXT,
+          medication_code TEXT,
+          medication_system TEXT,
           medication_text TEXT,
           authored_on TEXT,
           status TEXT,
@@ -261,8 +271,8 @@ export class SqlTranspiler {
       // Insert medication requests
       views.medicationRequests.forEach((m: any) => {
         db.run(
-          'INSERT INTO MedicationRequest (id, subject_id, medication_text, authored_on, status, intent) VALUES (?, ?, ?, ?, ?, ?)',
-          [m.id, m.subject_id, m.medication_text || null, m.authored_on || null, m.status || null, m.intent || null]
+          'INSERT INTO MedicationRequest (id, subject_id, medication_code, medication_system, medication_text, authored_on, status, intent) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+          [m.id, m.subject_id, m.medication_code || null, m.medication_system || null, m.medication_text || null, m.authored_on || null, m.status || null, m.intent || null]
         );
       });
       this.addLog('SUCCESS', `Inserted ${views.medicationRequests.length} medication requests into database`);
@@ -295,6 +305,8 @@ export class SqlTranspiler {
         CREATE TABLE DiagnosticReport (
           id TEXT PRIMARY KEY,
           subject_id TEXT,
+          code TEXT,
+          code_system TEXT,
           code_text TEXT,
           effective_datetime TEXT,
           issued TEXT,
@@ -306,8 +318,8 @@ export class SqlTranspiler {
       // Insert diagnostic reports
       views.diagnosticReports.forEach((d: any) => {
         db.run(
-          'INSERT INTO DiagnosticReport (id, subject_id, code_text, effective_datetime, issued, status) VALUES (?, ?, ?, ?, ?, ?)',
-          [d.id, d.subject_id, d.code_text || null, d.effective_datetime || null, d.issued || null, d.status || null]
+          'INSERT INTO DiagnosticReport (id, subject_id, code, code_system, code_text, effective_datetime, issued, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+          [d.id, d.subject_id, d.code || null, d.code_system || null, d.code_text || null, d.effective_datetime || null, d.issued || null, d.status || null]
         );
       });
       this.addLog('SUCCESS', `Inserted ${views.diagnosticReports.length} diagnostic reports into database`);

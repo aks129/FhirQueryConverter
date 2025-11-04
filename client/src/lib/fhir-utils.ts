@@ -100,21 +100,29 @@ export function flattenBundleToViews(bundle: FhirBundle): {
   observations: Array<{
     id: string;
     subject_id: string;
+    code?: string;
+    code_system?: string;
     code_text?: string;
     effective_datetime?: string;
     value_quantity?: number;
     value_unit?: string;
+    status?: string;
   }>;
   conditions: Array<{
     id: string;
     subject_id: string;
+    code?: string;
+    code_system?: string;
     code_text?: string;
     onset_datetime?: string;
     clinical_status?: string;
+    verification_status?: string;
   }>;
   procedures: Array<{
     id: string;
     subject_id: string;
+    code?: string;
+    code_system?: string;
     code_text?: string;
     performed_datetime?: string;
     status?: string;
@@ -122,6 +130,8 @@ export function flattenBundleToViews(bundle: FhirBundle): {
   medicationRequests: Array<{
     id: string;
     subject_id: string;
+    medication_code?: string;
+    medication_system?: string;
     medication_text?: string;
     authored_on?: string;
     status?: string;
@@ -139,6 +149,8 @@ export function flattenBundleToViews(bundle: FhirBundle): {
   diagnosticReports: Array<{
     id: string;
     subject_id: string;
+    code?: string;
+    code_system?: string;
     code_text?: string;
     effective_datetime?: string;
     issued?: string;
@@ -181,10 +193,13 @@ export function flattenBundleToViews(bundle: FhirBundle): {
         observations.push({
           id: obs.id,
           subject_id: obs.subject.reference.replace('Patient/', ''),
+          code: obs.code.coding?.[0]?.code,
+          code_system: obs.code.coding?.[0]?.system,
           code_text: obs.code.text || obs.code.coding?.[0]?.display,
           effective_datetime: obs.effectiveDateTime,
           value_quantity: obs.valueQuantity?.value,
-          value_unit: obs.valueQuantity?.unit
+          value_unit: obs.valueQuantity?.unit,
+          status: obs.status
         });
         break;
 
@@ -193,9 +208,12 @@ export function flattenBundleToViews(bundle: FhirBundle): {
         conditions.push({
           id: condition.id,
           subject_id: condition.subject.reference.replace('Patient/', ''),
+          code: condition.code.coding?.[0]?.code,
+          code_system: condition.code.coding?.[0]?.system,
           code_text: condition.code.text || condition.code.coding?.[0]?.display,
           onset_datetime: condition.onsetDateTime,
-          clinical_status: condition.clinicalStatus?.coding?.[0]?.code
+          clinical_status: condition.clinicalStatus?.coding?.[0]?.code,
+          verification_status: condition.verificationStatus?.coding?.[0]?.code
         });
         break;
 
@@ -204,6 +222,8 @@ export function flattenBundleToViews(bundle: FhirBundle): {
         procedures.push({
           id: procedure.id,
           subject_id: procedure.subject.reference.replace('Patient/', ''),
+          code: procedure.code.coding?.[0]?.code,
+          code_system: procedure.code.coding?.[0]?.system,
           code_text: procedure.code.text || procedure.code.coding?.[0]?.display,
           performed_datetime: procedure.performedDateTime || procedure.performedPeriod?.start,
           status: procedure.status
@@ -215,6 +235,8 @@ export function flattenBundleToViews(bundle: FhirBundle): {
         medicationRequests.push({
           id: medReq.id,
           subject_id: medReq.subject.reference.replace('Patient/', ''),
+          medication_code: medReq.medicationCodeableConcept?.coding?.[0]?.code,
+          medication_system: medReq.medicationCodeableConcept?.coding?.[0]?.system,
           medication_text: medReq.medicationCodeableConcept?.text ||
                           medReq.medicationCodeableConcept?.coding?.[0]?.display,
           authored_on: medReq.authoredOn,
@@ -241,6 +263,8 @@ export function flattenBundleToViews(bundle: FhirBundle): {
         diagnosticReports.push({
           id: report.id,
           subject_id: report.subject.reference.replace('Patient/', ''),
+          code: report.code.coding?.[0]?.code,
+          code_system: report.code.coding?.[0]?.system,
           code_text: report.code.text || report.code.coding?.[0]?.display,
           effective_datetime: report.effectiveDateTime || report.effectivePeriod?.start,
           issued: report.issued,
