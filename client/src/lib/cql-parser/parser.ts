@@ -476,12 +476,12 @@ export class CqlParser {
     // Check for alias (identifier not followed by another keyword)
     let alias: string | undefined;
     if (this.check(TokenType.IDENTIFIER)) {
-      // Peek ahead to see if this identifier is followed by WHERE/WITH
+      // Peek ahead to see if this identifier is followed by WHERE/WITH/RETURN
       alias = this.advance().value;
     }
 
-    // Check for WHERE or WITH clause after resource reference
-    if (this.checkAny(TokenType.WHERE, TokenType.WITH, TokenType.WITHOUT)) {
+    // Check for WHERE, WITH, WITHOUT, or RETURN clause after resource reference
+    if (this.checkAny(TokenType.WHERE, TokenType.WITH, TokenType.WITHOUT, TokenType.RETURN)) {
       const query = this.parseQuery(result);
       if (alias) {
         query.alias = alias;

@@ -214,20 +214,30 @@ DiagnosticReport_view AS (
       }
     }
 
-    // Add additional fields if needed
-    const hasAdditionalFields = query.source.type === 'ResourceReference' &&
-        query.source.resourceType === 'Patient';
+    // Determine what to SELECT
+    let selectClause: string;
 
-    // For identifier sources, select from patient_id column, not id
-    const selectColumn = isIdentifierSource ? 'patient_id' : `${alias}.id AS patient_id`;
-    lines.push(`${indent}SELECT ${selectColumn}${hasAdditionalFields ? ',' : ''}`);
+    if (query.return) {
+      // Use RETURN clause if specified
+      const returnExpression = this.generateExpression(query.return);
+      selectClause = `${indent}SELECT ${returnExpression}`;
+    } else {
+      // Default selection: patient_id and additional fields if Patient
+      const hasAdditionalFields = query.source.type === 'ResourceReference' &&
+          query.source.resourceType === 'Patient';
 
-    if (hasAdditionalFields) {
-      lines.push(`${indent}       ${alias}.gender,`);
-      lines.push(`${indent}       ${alias}.age,`);
-      lines.push(`${indent}       ${alias}.birthDate`);
+      // For identifier sources, select from patient_id column, not id
+      const selectColumn = isIdentifierSource ? 'patient_id' : `${alias}.id AS patient_id`;
+      selectClause = `${indent}SELECT ${selectColumn}${hasAdditionalFields ? ',' : ''}`;
+
+      if (hasAdditionalFields) {
+        selectClause += `\n${indent}       ${alias}.gender,`;
+        selectClause += `\n${indent}       ${alias}.age,`;
+        selectClause += `\n${indent}       ${alias}.birthDate`;
+      }
     }
 
+    lines.push(selectClause);
     lines.push(`${indent}FROM ${sourceTable} ${alias}`);
 
     // Generate relationship clauses (WITH/WITHOUT)
