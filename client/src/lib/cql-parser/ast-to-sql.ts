@@ -67,8 +67,7 @@ export class AstToSqlTranspiler {
   }
 
   private generateBaseFhirViews(): string {
-    return `-- Base FHIR views following SQL on FHIR specification
-Patient_view AS (
+    return `Patient_view AS (
   SELECT
     id,
     gender,
