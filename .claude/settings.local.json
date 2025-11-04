@@ -10,7 +10,12 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash(npx vercel:*)"
+      "Bash(npx vercel:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run dev:*)",
+      "Bash(timeout 10 bash:*)",
+      "Bash(npx tsx:*)",
+      "Bash(timeout 5 bash:*)"
     ],
     "deny": [],
     "ask": []
