@@ -464,6 +464,11 @@ export class CqlParser {
       let alias: string | undefined;
       let condition: CqlExpressionNode | undefined;
 
+      // Extract the resource reference if it's wrapped in a Query
+      const sourceRef: ResourceReferenceNode = relSource.type === 'Query'
+        ? (relSource.source as ResourceReferenceNode)
+        : relSource;
+
       // Check for alias
       if (this.check(TokenType.IDENTIFIER)) {
         alias = this.advance().value;
@@ -478,7 +483,7 @@ export class CqlParser {
       query.relationships.push({
         type: 'RelationshipClause',
         relationship,
-        source: relSource,
+        source: sourceRef,
         alias,
         condition,
       });

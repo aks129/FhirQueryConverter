@@ -72,6 +72,105 @@ export interface Condition extends FhirResource {
   onsetDateTime?: string;
 }
 
+export interface Procedure extends FhirResource {
+  resourceType: "Procedure";
+  status: string;
+  code: {
+    coding?: Array<{
+      system?: string;
+      code?: string;
+      display?: string;
+    }>;
+    text?: string;
+  };
+  subject: {
+    reference: string;
+  };
+  performedDateTime?: string;
+  performedPeriod?: {
+    start?: string;
+    end?: string;
+  };
+}
+
+export interface MedicationRequest extends FhirResource {
+  resourceType: "MedicationRequest";
+  status: string;
+  intent: string;
+  medicationCodeableConcept?: {
+    coding?: Array<{
+      system?: string;
+      code?: string;
+      display?: string;
+    }>;
+    text?: string;
+  };
+  subject: {
+    reference: string;
+  };
+  authoredOn?: string;
+  dosageInstruction?: Array<{
+    text?: string;
+    timing?: any;
+    doseAndRate?: Array<{
+      doseQuantity?: {
+        value?: number;
+        unit?: string;
+      };
+    }>;
+  }>;
+}
+
+export interface Encounter extends FhirResource {
+  resourceType: "Encounter";
+  status: string;
+  class: {
+    system?: string;
+    code?: string;
+    display?: string;
+  };
+  type?: Array<{
+    coding?: Array<{
+      system?: string;
+      code?: string;
+      display?: string;
+    }>;
+    text?: string;
+  }>;
+  subject: {
+    reference: string;
+  };
+  period?: {
+    start?: string;
+    end?: string;
+  };
+}
+
+export interface DiagnosticReport extends FhirResource {
+  resourceType: "DiagnosticReport";
+  status: string;
+  code: {
+    coding?: Array<{
+      system?: string;
+      code?: string;
+      display?: string;
+    }>;
+    text?: string;
+  };
+  subject: {
+    reference: string;
+  };
+  effectiveDateTime?: string;
+  effectivePeriod?: {
+    start?: string;
+    end?: string;
+  };
+  issued?: string;
+  result?: Array<{
+    reference: string;
+  }>;
+}
+
 export interface MeasureReport extends FhirResource {
   resourceType: "MeasureReport";
   status: string;

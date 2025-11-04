@@ -94,6 +94,46 @@ Condition_view AS (
     onset_datetime,
     clinical_status
   FROM Condition
+),
+Procedure_view AS (
+  SELECT
+    id,
+    subject_id,
+    code_text,
+    performed_datetime,
+    status
+  FROM Procedure
+),
+MedicationRequest_view AS (
+  SELECT
+    id,
+    subject_id,
+    medication_text,
+    authored_on,
+    status,
+    intent
+  FROM MedicationRequest
+),
+Encounter_view AS (
+  SELECT
+    id,
+    subject_id,
+    class_code,
+    type_text,
+    period_start,
+    period_end,
+    status
+  FROM Encounter
+),
+DiagnosticReport_view AS (
+  SELECT
+    id,
+    subject_id,
+    code_text,
+    effective_datetime,
+    issued,
+    status
+  FROM DiagnosticReport
 )`;
   }
 

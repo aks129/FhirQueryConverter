@@ -88,7 +88,7 @@ export class SqlTranspiler {
   private async executeSql(sql: string, fhirBundle: FhirBundle): Promise<{ [key: string]: number }> {
     // Flatten FHIR bundle to SQL views
     const views = flattenBundleToViews(fhirBundle);
-    this.addLog('INFO', `Flattened FHIR bundle: ${views.patients.length} patients, ${views.observations.length} observations, ${views.conditions.length} conditions`);
+    this.addLog('INFO', `Flattened FHIR bundle: ${views.patients.length} patients, ${views.observations.length} observations, ${views.conditions.length} conditions, ${views.procedures.length} procedures, ${views.medicationRequests.length} medications, ${views.encounters.length} encounters, ${views.diagnosticReports.length} reports`);
 
     // Create in-memory database with real SQL.js
     const db = await this.createInMemoryDatabase(views);
@@ -223,6 +223,94 @@ export class SqlTranspiler {
         );
       });
       this.addLog('SUCCESS', `Inserted ${views.conditions.length} conditions into database`);
+
+      // Create Procedure table
+      db.run(`
+        CREATE TABLE Procedure (
+          id TEXT PRIMARY KEY,
+          subject_id TEXT,
+          code_text TEXT,
+          performed_datetime TEXT,
+          status TEXT
+        )
+      `);
+      this.addLog('INFO', 'Created Procedure table');
+
+      // Insert procedures
+      views.procedures.forEach((p: any) => {
+        db.run(
+          'INSERT INTO Procedure (id, subject_id, code_text, performed_datetime, status) VALUES (?, ?, ?, ?, ?)',
+          [p.id, p.subject_id, p.code_text || null, p.performed_datetime || null, p.status || null]
+        );
+      });
+      this.addLog('SUCCESS', `Inserted ${views.procedures.length} procedures into database`);
+
+      // Create MedicationRequest table
+      db.run(`
+        CREATE TABLE MedicationRequest (
+          id TEXT PRIMARY KEY,
+          subject_id TEXT,
+          medication_text TEXT,
+          authored_on TEXT,
+          status TEXT,
+          intent TEXT
+        )
+      `);
+      this.addLog('INFO', 'Created MedicationRequest table');
+
+      // Insert medication requests
+      views.medicationRequests.forEach((m: any) => {
+        db.run(
+          'INSERT INTO MedicationRequest (id, subject_id, medication_text, authored_on, status, intent) VALUES (?, ?, ?, ?, ?, ?)',
+          [m.id, m.subject_id, m.medication_text || null, m.authored_on || null, m.status || null, m.intent || null]
+        );
+      });
+      this.addLog('SUCCESS', `Inserted ${views.medicationRequests.length} medication requests into database`);
+
+      // Create Encounter table
+      db.run(`
+        CREATE TABLE Encounter (
+          id TEXT PRIMARY KEY,
+          subject_id TEXT,
+          class_code TEXT,
+          type_text TEXT,
+          period_start TEXT,
+          period_end TEXT,
+          status TEXT
+        )
+      `);
+      this.addLog('INFO', 'Created Encounter table');
+
+      // Insert encounters
+      views.encounters.forEach((e: any) => {
+        db.run(
+          'INSERT INTO Encounter (id, subject_id, class_code, type_text, period_start, period_end, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
+          [e.id, e.subject_id, e.class_code || null, e.type_text || null, e.period_start || null, e.period_end || null, e.status || null]
+        );
+      });
+      this.addLog('SUCCESS', `Inserted ${views.encounters.length} encounters into database`);
+
+      // Create DiagnosticReport table
+      db.run(`
+        CREATE TABLE DiagnosticReport (
+          id TEXT PRIMARY KEY,
+          subject_id TEXT,
+          code_text TEXT,
+          effective_datetime TEXT,
+          issued TEXT,
+          status TEXT
+        )
+      `);
+      this.addLog('INFO', 'Created DiagnosticReport table');
+
+      // Insert diagnostic reports
+      views.diagnosticReports.forEach((d: any) => {
+        db.run(
+          'INSERT INTO DiagnosticReport (id, subject_id, code_text, effective_datetime, issued, status) VALUES (?, ?, ?, ?, ?, ?)',
+          [d.id, d.subject_id, d.code_text || null, d.effective_datetime || null, d.issued || null, d.status || null]
+        );
+      });
+      this.addLog('SUCCESS', `Inserted ${views.diagnosticReports.length} diagnostic reports into database`);
 
       return {
         exec: (sql: string) => {
