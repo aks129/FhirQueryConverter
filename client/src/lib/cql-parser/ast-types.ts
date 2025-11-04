@@ -140,7 +140,8 @@ export type BinaryOperator =
   | 'in' | 'contains'
   // Temporal
   | 'during' | 'before' | 'after' | 'overlaps'
-  | 'starts' | 'ends' | 'occurs';
+  | 'starts' | 'ends' | 'occurs'
+  | 'on or before' | 'on or after';
 
 /**
  * Unary expression: not a, exists a

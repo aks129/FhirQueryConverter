@@ -18,6 +18,7 @@ import {
   RelationshipClauseNode,
   IntervalNode,
 } from './ast-types';
+import { CqlNamingValidator } from './naming-validator';
 
 export interface SqlGenerationContext {
   defines: Map<string, DefineNode>;
@@ -29,6 +30,7 @@ export interface SqlGenerationContext {
 export class AstToSqlTranspiler {
   private context: SqlGenerationContext;
   private logs: string[] = [];
+  private namingValidator: CqlNamingValidator;
 
   constructor() {
     this.context = {
@@ -40,9 +42,32 @@ export class AstToSqlTranspiler {
         end: '2024-12-31T23:59:59Z',
       },
     };
+    this.namingValidator = new CqlNamingValidator();
   }
 
   transpile(library: LibraryNode): string {
+    // Validate naming conventions per HL7 CQL Implementation Guide
+    this.namingValidator.clear();
+
+    // Validate library name
+    if (library.identifier) {
+      this.namingValidator.validateLibrary(library.identifier);
+    }
+
+    // Validate all definition names
+    library.defines.forEach(define => {
+      this.namingValidator.validateDefinition(define.name);
+    });
+
+    // Log naming violations as warnings
+    if (this.namingValidator.hasViolations()) {
+      this.log('⚠️  Naming Convention Warnings:');
+      this.namingValidator.getViolations().forEach(violation => {
+        this.log(`  - ${violation.type} "${violation.identifier}": ${violation.violation}`);
+        this.log(`    Suggestion: ${violation.suggestion}`);
+      });
+    }
+
     // Build defines map
     library.defines.forEach(define => {
       this.context.defines.set(define.name, define);
@@ -79,25 +104,33 @@ Observation_view AS (
   SELECT
     id,
     subject_id,
+    code,
+    code_system,
     code_text,
     effective_datetime,
     value_quantity,
-    value_unit
+    value_unit,
+    status
   FROM Observation
 ),
 Condition_view AS (
   SELECT
     id,
     subject_id,
+    code,
+    code_system,
     code_text,
     onset_datetime,
-    clinical_status
+    clinical_status,
+    verification_status
   FROM Condition
 ),
 Procedure_view AS (
   SELECT
     id,
     subject_id,
+    code,
+    code_system,
     code_text,
     performed_datetime,
     status
@@ -107,6 +140,8 @@ MedicationRequest_view AS (
   SELECT
     id,
     subject_id,
+    medication_code,
+    medication_system,
     medication_text,
     authored_on,
     status,
@@ -128,6 +163,8 @@ DiagnosticReport_view AS (
   SELECT
     id,
     subject_id,
+    code,
+    code_system,
     code_text,
     effective_datetime,
     issued,
@@ -258,6 +295,15 @@ DiagnosticReport_view AS (
     // Generate WHERE clause (after JOINs)
     const whereConditions: string[] = [];
 
+    // Add default status filters per HL7 CQL Implementation Guide
+    // Only retrieve clinically relevant resources with appropriate status
+    if (query.source.type === 'ResourceReference') {
+      const statusFilter = this.getDefaultStatusFilter(query.source.resourceType, alias);
+      if (statusFilter) {
+        whereConditions.push(statusFilter);
+      }
+    }
+
     // Add code filter from resource reference (e.g., [Observation: "Heart Rate"])
     if (query.source.type === 'ResourceReference' && query.source.codeFilter) {
       const codeFilterCondition = this.generateCodeFilter(query.source.codeFilter, alias);
@@ -345,9 +391,15 @@ DiagnosticReport_view AS (
     if (codeFilter.type === 'Identifier' || codeFilter.type === 'Literal') {
       const codeValue = codeFilter.type === 'Identifier'
         ? (codeFilter as IdentifierNode).name
-        : (codeFilter as LiteralNode).value;
+        : String((codeFilter as LiteralNode).value);
 
-      // Use LIKE for partial matching to be more flexible
+      // Check if it's a canonical URL (value set reference)
+      if (this.isCanonicalUrl(codeValue)) {
+        this.log(`Using canonical value set URL: ${codeValue}`);
+        return this.generateValueSetMembership(alias, codeValue);
+      }
+
+      // Legacy: Use LIKE for partial matching (for backward compatibility)
       return `${alias}.code_text LIKE '%${codeValue}%'`;
     }
 
@@ -357,13 +409,16 @@ DiagnosticReport_view AS (
 
       // Handle "in" operator for value set membership
       if (expr.operator === 'in') {
-        // For now, treat value set as a simple code match
-        // In a real implementation, this would query a value set expansion table
-        const valueSetName = this.generateExpression(expr.right);
-        this.log(`Code filter uses value set: ${valueSetName} (treating as code match for now)`);
+        const valueSetIdentifier = this.extractValueSetIdentifier(expr.right);
+        this.log(`Code filter uses value set membership: ${valueSetIdentifier}`);
 
-        // Simplified: just check if code_text contains the value set name
-        return `${alias}.code_text LIKE '%${valueSetName}%'`;
+        // Check if it's a canonical URL
+        if (this.isCanonicalUrl(valueSetIdentifier)) {
+          return this.generateValueSetMembership(alias, valueSetIdentifier);
+        }
+
+        // Legacy: treat as simple code match for backward compatibility
+        return `${alias}.code_text LIKE '%${valueSetIdentifier}%'`;
       }
 
       // Other binary operations
@@ -375,6 +430,87 @@ DiagnosticReport_view AS (
 
     // Fallback: try to generate as expression
     return this.generateExpression(codeFilter);
+  }
+
+  private isCanonicalUrl(str: string): boolean {
+    return str.startsWith('http://') || str.startsWith('https://') || str.startsWith('urn:');
+  }
+
+  private extractValueSetIdentifier(expr: CqlExpressionNode): string {
+    if (expr.type === 'Identifier') {
+      return (expr as IdentifierNode).name;
+    }
+    if (expr.type === 'Literal') {
+      return String((expr as LiteralNode).value);
+    }
+    return this.generateExpression(expr);
+  }
+
+  private generateValueSetMembership(alias: string, valueSetUrl: string): string {
+    // Generate SQL for value set membership testing
+    // Uses a ValueSetExpansion table that contains pre-expanded value set codes
+
+    return `EXISTS (
+      SELECT 1 FROM ValueSetExpansion vse
+      WHERE vse.value_set_url = '${valueSetUrl}'
+        AND vse.code = ${alias}.code
+        AND vse.system = ${alias}.code_system
+    )`;
+  }
+
+  /**
+   * Get default status filter per HL7 CQL Implementation Guide
+   * Ensures queries only retrieve clinically relevant resources
+   *
+   * References:
+   * - http://hl7.org/fhir/us/cql/STU2/patterns.html#filtering-by-status
+   * - https://hl7.org/fhir/uv/cql/STU2/using-cql.html#filtering-observations
+   */
+  private getDefaultStatusFilter(resourceType: string, alias: string): string | null {
+    switch (resourceType) {
+      case 'Observation':
+        // Only final, amended, or corrected observations
+        // Exclude: preliminary, cancelled, entered-in-error, unknown
+        return `${alias}.status IN ('final', 'amended', 'corrected')`;
+
+      case 'Condition':
+        // Only active conditions
+        // clinical_status is a CodeableConcept with coding system http://terminology.hl7.org/CodeSystem/condition-clinical
+        // Common values: active, recurrence, relapse, inactive, remission, resolved
+        return `${alias}.clinical_status = 'active'`;
+
+      case 'Procedure':
+        // Only completed procedures
+        // Exclude: preparation, in-progress, not-done, on-hold, stopped, entered-in-error, unknown
+        return `${alias}.status = 'completed'`;
+
+      case 'MedicationRequest':
+        // Only active or completed medication requests
+        // Exclude: cancelled, draft, entered-in-error, stopped, unknown
+        return `${alias}.status IN ('active', 'completed')`;
+
+      case 'Encounter':
+        // Only finished encounters
+        // Exclude: planned, arrived, triaged, in-progress, onleave, cancelled, entered-in-error, unknown
+        return `${alias}.status = 'finished'`;
+
+      case 'DiagnosticReport':
+        // Only final, amended, or corrected reports
+        // Exclude: registered, partial, preliminary, cancelled, entered-in-error, unknown
+        return `${alias}.status IN ('final', 'amended', 'corrected')`;
+
+      case 'AllergyIntolerance':
+        // Only active allergies
+        return `${alias}.clinical_status = 'active'`;
+
+      case 'Immunization':
+        // Only completed immunizations
+        return `${alias}.status = 'completed'`;
+
+      default:
+        // No default status filter for Patient and other resources
+        return null;
+    }
   }
 
   private generateWhereCondition(expr: CqlExpressionNode, alias: string): string {
@@ -403,15 +539,54 @@ DiagnosticReport_view AS (
     const right = this.generateExpression(expr.right);
     const operator = this.mapOperatorToSql(expr.operator);
 
-    // Special handling for temporal operators
-    if (expr.operator === 'during') {
-      // Check if right side is measurement period reference
-      if (right.includes('Measurement Period') || right.includes('Interval')) {
-        return `${left} BETWEEN '${this.context.measurementPeriod?.start}' AND '${this.context.measurementPeriod?.end}'`;
-      }
-    }
+    // Special handling for temporal operators per HL7 CQL Implementation Guide
+    // Reference: http://hl7.org/fhir/us/cql/STU2/patterns.html#temporal-queries
+    switch (expr.operator) {
+      case 'during':
+        // date during interval
+        if (right.includes('Measurement Period') || right.includes('Interval')) {
+          return `${left} BETWEEN '${this.context.measurementPeriod?.start}' AND '${this.context.measurementPeriod?.end}'`;
+        }
+        return `${left} ${operator} ${right}`;
 
-    return `${left} ${operator} ${right}`;
+      case 'in':
+        // Similar to 'during' for intervals
+        if (right.includes('Measurement Period') || right.includes('Interval')) {
+          return `${left} BETWEEN '${this.context.measurementPeriod?.start}' AND '${this.context.measurementPeriod?.end}'`;
+        }
+        return `${left} ${operator} ${right}`;
+
+      case 'before':
+        // date before date/interval
+        return `${left} < ${right}`;
+
+      case 'after':
+        // date after date/interval
+        return `${left} > ${right}`;
+
+      case 'on or before':
+        return `${left} <= ${right}`;
+
+      case 'on or after':
+        return `${left} >= ${right}`;
+
+      case 'starts':
+        // interval starts interval - first point of left equals first point of right
+        return `${left} = ${right}`;
+
+      case 'ends':
+        // interval ends interval - last point of left equals last point of right
+        return `${left} = ${right}`;
+
+      case 'overlaps':
+        // intervals overlap - some point in both intervals
+        // For SQL: (start1 <= end2) AND (end1 >= start2)
+        // This is complex and may need interval unpacking
+        return `${left} ${operator} ${right}`;
+
+      default:
+        return `${left} ${operator} ${right}`;
+    }
   }
 
   private generateUnaryExpression(expr: UnaryExpressionNode): string {

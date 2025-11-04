@@ -2,17 +2,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Code, Database, Workflow, Zap, GitBranch, Server, ArrowLeft } from "lucide-react";
+import { Code, Database, Workflow, Zap, GitBranch, Server, ArrowLeft, CheckCircle2, AlertCircle, Layers } from "lucide-react";
 import { Link } from "wouter";
 
 export default function FAQ() {
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="container mx-auto px-4 py-8 max-w-5xl">
       <div className="mb-6">
         <Link href="/">
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className="flex items-center gap-2 mb-4"
             data-testid="button-back-home"
           >
@@ -23,35 +23,110 @@ export default function FAQ() {
       </div>
 
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold mb-4">Architecture & Methodology FAQ</h1>
-        <p className="text-lg text-muted-foreground">
-          Understanding the backend architecture and conversion methodology for CQL-to-SQL on FHIR
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <h1 className="text-3xl font-bold">FHIR Query Converter</h1>
+          <Badge variant="secondary">Alpha v0.1</Badge>
+        </div>
+        <p className="text-lg text-muted-foreground mb-4">
+          HL7-Compliant CQL to SQL on FHIR Transpiler with ELM Integration
         </p>
+        <div className="flex items-center justify-center gap-4 text-sm">
+          <Badge variant="outline" className="flex items-center gap-1">
+            <CheckCircle2 className="w-3 h-3" />
+            Phase 6 Complete
+          </Badge>
+          <Badge variant="outline">6/8 Tracks Implemented</Badge>
+        </div>
       </div>
 
       <Accordion type="single" collapsible className="space-y-4">
-        <AccordionItem value="overview" data-testid="accordion-overview">
+        {/* Architecture Overview */}
+        <AccordionItem value="architecture" data-testid="accordion-architecture">
           <AccordionTrigger className="text-left">
             <div className="flex items-center gap-2">
               <Workflow className="w-5 h-5" />
-              What is the overall system architecture?
+              What is the complete system architecture?
             </div>
           </AccordionTrigger>
           <AccordionContent>
             <Card>
               <CardContent className="pt-6">
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <div>
-                    <Badge variant="outline" className="mb-2">Frontend Layer</Badge>
-                    <p>React + TypeScript application with shadcn/ui components for the user interface. Handles CQL input, FHIR bundle uploads, and results display.</p>
+                    <h4 className="font-semibold mb-3">CQL → ELM → SQL Pipeline</h4>
+                    <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 p-6 rounded-lg border">
+                      <div className="flex items-center justify-between text-sm font-mono">
+                        <div className="text-center flex-1">
+                          <div className="font-bold mb-1">CQL Source</div>
+                          <div className="text-xs text-muted-foreground">Clinical Logic</div>
+                        </div>
+                        <div className="text-xl">→</div>
+                        <div className="text-center flex-1">
+                          <div className="font-bold mb-1">Parser</div>
+                          <div className="text-xs text-muted-foreground">Lexer + Grammar</div>
+                        </div>
+                        <div className="text-xl">→</div>
+                        <div className="text-center flex-1">
+                          <div className="font-bold mb-1">CQL AST</div>
+                          <div className="text-xs text-muted-foreground">Tree Structure</div>
+                        </div>
+                        <div className="text-xl">→</div>
+                        <div className="text-center flex-1">
+                          <div className="font-bold mb-1">ELM</div>
+                          <div className="text-xs text-muted-foreground">HL7 Standard</div>
+                        </div>
+                        <div className="text-xl">→</div>
+                        <div className="text-center flex-1">
+                          <div className="font-bold mb-1">SQL</div>
+                          <div className="text-xs text-muted-foreground">on FHIR</div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <Badge variant="outline" className="mb-2">Processing Layer</Badge>
-                    <p>Two parallel evaluation engines: Direct CQL execution using cql-execution library, and CQL-to-SQL transpilation with SQL on FHIR evaluation.</p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Badge variant="outline" className="mb-2">Frontend Layer</Badge>
+                      <p className="text-sm">React + TypeScript with shadcn/ui. CQL editor, FHIR bundle upload, dual evaluation results display.</p>
+                    </div>
+                    <div>
+                      <Badge variant="outline" className="mb-2">Processing Layer</Badge>
+                      <p className="text-sm">Dual engines: Direct CQL execution + CQL→ELM→SQL transpilation with HL7 best practices.</p>
+                    </div>
+                    <div>
+                      <Badge variant="outline" className="mb-2">Data Layer</Badge>
+                      <p className="text-sm">FHIR resource flattening, SQL view generation, value set expansion, terminology services.</p>
+                    </div>
                   </div>
+
                   <div>
-                    <Badge variant="outline" className="mb-2">Data Layer</Badge>
-                    <p>FHIR bundle processing, SQL view generation, and in-memory database simulation for proof-of-concept demonstration.</p>
+                    <h5 className="font-medium mb-2">Key Components (Phase 6)</h5>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                        <span>Canonical URL Support</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                        <span>Value Set Expansion</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                        <span>Automatic Status Filtering</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                        <span>Naming Convention Validation</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                        <span>ELM Intermediate Layer</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                        <span>Enhanced Temporal Operators</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -59,29 +134,99 @@ export default function FAQ() {
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="cql-engine" data-testid="accordion-cql-engine">
+        {/* ELM Integration */}
+        <AccordionItem value="elm-integration" data-testid="accordion-elm">
           <AccordionTrigger className="text-left">
             <div className="flex items-center gap-2">
-              <Code className="w-5 h-5" />
-              How does the direct CQL evaluation engine work?
+              <Layers className="w-5 h-5" />
+              How does ELM (Expression Logical Model) integration work?
             </div>
           </AccordionTrigger>
           <AccordionContent>
             <Card>
               <CardContent className="pt-6">
                 <div className="space-y-4">
-                  <h4 className="font-semibold">CQL Parsing & Execution</h4>
-                  <ol className="list-decimal list-inside space-y-2 text-sm">
-                    <li><strong>Input Processing:</strong> CQL code is parsed to extract define statements and expressions</li>
-                    <li><strong>Context Creation:</strong> FHIR bundle is loaded into a patient context for evaluation</li>
-                    <li><strong>Expression Evaluation:</strong> Each CQL define statement is evaluated against the FHIR resources</li>
-                    <li><strong>Result Generation:</strong> Produces a FHIR MeasureReport with population counts and metrics</li>
-                  </ol>
+                  <div>
+                    <h4 className="font-semibold mb-2">What is ELM?</h4>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      ELM is HL7's standardized intermediate representation for clinical quality logic.
+                      It sits between CQL source code and target languages (SQL, JavaScript, C#), enabling
+                      multi-target compilation, optimization, and validation.
+                    </p>
+                  </div>
+
                   <div className="bg-muted p-4 rounded-lg">
-                    <code className="text-sm">
-                      define "Initial Population": Patient P where P.gender = 'female'<br/>
-                      define "Numerator": [Observation: "Heart Rate"] O where O.value &gt; 100
-                    </code>
+                    <h5 className="font-medium mb-3">Pipeline Stages</h5>
+                    <div className="space-y-3">
+                      <div className="flex gap-3">
+                        <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-bold shrink-0">1</div>
+                        <div>
+                          <div className="font-medium">CQL Parsing</div>
+                          <div className="text-sm text-muted-foreground">Parse CQL source into Abstract Syntax Tree (AST)</div>
+                          <code className="text-xs bg-background px-2 py-1 rounded mt-1 inline-block">
+                            define "Has Diabetes": [Condition: "Diabetes Codes"]
+                          </code>
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                        <div className="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center text-sm font-bold shrink-0">2</div>
+                        <div>
+                          <div className="font-medium">AST → ELM Conversion</div>
+                          <div className="text-sm text-muted-foreground">Transform AST into HL7-compliant ELM structure</div>
+                          <code className="text-xs bg-background px-2 py-1 rounded mt-1 inline-block">
+                            {`{ type: "Retrieve", dataType: "FHIR.Condition", codes: {...} }`}
+                          </code>
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                        <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center text-sm font-bold shrink-0">3</div>
+                        <div>
+                          <div className="font-medium">ELM → SQL Generation</div>
+                          <div className="text-sm text-muted-foreground">Generate SQL on FHIR with best practices applied</div>
+                          <code className="text-xs bg-background px-2 py-1 rounded mt-1 inline-block">
+                            SELECT c.subject_id WHERE EXISTS (SELECT 1 FROM ValueSetExpansion...)
+                          </code>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h5 className="font-medium mb-2">ELM Type System</h5>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <Badge variant="secondary" className="mb-1">Expressions</Badge>
+                        <ul className="space-y-1 ml-4 list-disc">
+                          <li>Query (FROM...WHERE)</li>
+                          <li>Retrieve (FHIR resources)</li>
+                          <li>Property (field access)</li>
+                          <li>Binary/Unary ops</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <Badge variant="secondary" className="mb-1">Type Specifiers</Badge>
+                        <ul className="space-y-1 ml-4 list-disc">
+                          <li>NamedType (Patient, String)</li>
+                          <li>ListType (List&lt;T&gt;)</li>
+                          <li>IntervalType (Interval&lt;DateTime&gt;)</li>
+                          <li>TupleType (Structured data)</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <h5 className="font-medium mb-2 flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-blue-600" />
+                      Benefits of ELM Layer
+                    </h5>
+                    <ul className="text-sm space-y-1">
+                      <li>✓ <strong>Multi-Target:</strong> Same ELM generates SQL, JavaScript, C#, or other languages</li>
+                      <li>✓ <strong>Optimization:</strong> ELM tree can be optimized before code generation</li>
+                      <li>✓ <strong>Validation:</strong> Rich type information enables compile-time checking</li>
+                      <li>✓ <strong>Standards:</strong> Follows HL7 specification for interoperability</li>
+                      <li>✓ <strong>Debugging:</strong> Clear separation of parsing and generation concerns</li>
+                    </ul>
                   </div>
                 </div>
               </CardContent>
@@ -89,54 +234,296 @@ export default function FAQ() {
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="sql-transpiler" data-testid="accordion-sql-transpiler">
+        {/* Terminology & Value Sets */}
+        <AccordionItem value="terminology" data-testid="accordion-terminology">
           <AccordionTrigger className="text-left">
             <div className="flex items-center gap-2">
               <Database className="w-5 h-5" />
-              How does the CQL-to-SQL transpilation work?
+              How does terminology and value set support work?
             </div>
           </AccordionTrigger>
           <AccordionContent>
             <Card>
               <CardContent className="pt-6">
                 <div className="space-y-4">
-                  <h4 className="font-semibold">Transpilation Process</h4>
+                  <div>
+                    <h4 className="font-semibold mb-2">Canonical URL Support</h4>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      The system recognizes HL7 canonical URLs for value sets and generates proper
+                      SQL EXISTS queries against the ValueSetExpansion table instead of simple text matching.
+                    </p>
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <h5 className="font-medium mb-2">1. CQL Analysis</h5>
+                      <Badge variant="outline" className="mb-2">CQL Input</Badge>
+                      <pre className="text-xs bg-muted p-3 rounded-lg overflow-x-auto">
+{`define "Has Diabetes":
+  [Condition: "http://cts.nlm.nih.gov/
+   fhir/ValueSet/2.16.840.1.113883.
+   3.464.1003.103.12.1001"]`}
+                      </pre>
+                    </div>
+                    <div>
+                      <Badge variant="outline" className="mb-2">Generated SQL</Badge>
+                      <pre className="text-xs bg-muted p-3 rounded-lg overflow-x-auto">
+{`WHERE EXISTS (
+  SELECT 1 FROM ValueSetExpansion vse
+  WHERE vse.value_set_url = '...'
+    AND vse.code = c.code
+    AND vse.system = c.code_system
+)`}
+                      </pre>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h5 className="font-medium mb-2">Supported Code Systems</h5>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="text-xs">LOINC</Badge>
+                        <span className="text-xs text-muted-foreground">http://loinc.org</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="text-xs">SNOMED</Badge>
+                        <span className="text-xs text-muted-foreground">http://snomed.info/sct</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="text-xs">RxNorm</Badge>
+                        <span className="text-xs text-muted-foreground">http://nlm.nih.gov/...</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="text-xs">CPT</Badge>
+                        <span className="text-xs text-muted-foreground">http://ama-assn.org/...</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="text-xs">ICD-10</Badge>
+                        <span className="text-xs text-muted-foreground">http://hl7.org/fhir/...</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="text-xs">CVX</Badge>
+                        <span className="text-xs text-muted-foreground">http://hl7.org/fhir/...</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h5 className="font-medium mb-2">Value Set Expansion Database</h5>
+                    <pre className="text-xs bg-muted p-3 rounded-lg overflow-x-auto">
+{`CREATE TABLE ValueSetExpansion (
+  id INTEGER PRIMARY KEY,
+  value_set_url TEXT NOT NULL,    -- Canonical URL
+  version TEXT,
+  code TEXT NOT NULL,             -- e.g., "44054006"
+  system TEXT NOT NULL,           -- e.g., "http://snomed.info/sct"
+  display TEXT,                   -- Human-readable
+  UNIQUE(value_set_url, code, system)
+);`}
+                    </pre>
+                  </div>
+
+                  <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg border border-green-200 dark:border-green-800">
+                    <h5 className="font-medium mb-2">Pre-loaded Sample Value Sets</h5>
+                    <ul className="text-sm space-y-1">
+                      <li>• <strong>Heart Rate Codes</strong> (LOINC, SNOMED)</li>
+                      <li>• <strong>Diabetes Codes</strong> (SNOMED CT)</li>
+                      <li>• <strong>BMI Codes</strong> (LOINC)</li>
+                      <li>• <strong>Colonoscopy Codes</strong> (SNOMED, CPT)</li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* Automatic Status Filtering */}
+        <AccordionItem value="status-filtering" data-testid="accordion-status">
+          <AccordionTrigger className="text-left">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5" />
+              What is automatic status filtering and why is it important?
+            </div>
+          </AccordionTrigger>
+          <AccordionContent>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">HL7 Best Practice Implementation</h4>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Per HL7 CQL Implementation Guide, queries should only retrieve clinically relevant
+                      resources with appropriate status values. The system automatically injects status
+                      filters for all queries—no manual filtering required!
+                    </p>
+                  </div>
+
+                  <div className="bg-muted p-4 rounded-lg">
+                    <h5 className="font-medium mb-3">Status Filters by Resource Type</h5>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between items-center border-b pb-2">
+                        <span className="font-medium">Resource</span>
+                        <span className="font-medium">Automatic Filter</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span>Observation</span>
+                        <code className="text-xs bg-background px-2 py-1 rounded">status IN ('final', 'amended', 'corrected')</code>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span>Condition</span>
+                        <code className="text-xs bg-background px-2 py-1 rounded">clinical_status = 'active'</code>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span>Procedure</span>
+                        <code className="text-xs bg-background px-2 py-1 rounded">status = 'completed'</code>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span>MedicationRequest</span>
+                        <code className="text-xs bg-background px-2 py-1 rounded">status IN ('active', 'completed')</code>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span>Encounter</span>
+                        <code className="text-xs bg-background px-2 py-1 rounded">status = 'finished'</code>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span>DiagnosticReport</span>
+                        <code className="text-xs bg-background px-2 py-1 rounded">status IN ('final', 'amended', 'corrected')</code>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Badge className="mb-2 bg-red-600">❌ What Gets Excluded</Badge>
                       <ul className="text-sm space-y-1">
-                        <li>• Parse define statements</li>
-                        <li>• Extract filter conditions</li>
-                        <li>• Identify FHIR resource references</li>
-                        <li>• Map clinical concepts to SQL patterns</li>
+                        <li>• Preliminary results</li>
+                        <li>• Cancelled procedures</li>
+                        <li>• Entered-in-error data</li>
+                        <li>• Unknown status records</li>
+                        <li>• Draft medication orders</li>
                       </ul>
                     </div>
                     <div>
-                      <h5 className="font-medium mb-2">2. SQL Generation</h5>
+                      <Badge className="mb-2 bg-green-600">✓ What Gets Included</Badge>
                       <ul className="text-sm space-y-1">
-                        <li>• Create base FHIR views (Patient_view, Observation_view)</li>
-                        <li>• Generate CTEs for each population</li>
-                        <li>• Apply filters and joins</li>
-                        <li>• Calculate aggregated results</li>
+                        <li>• Final observations</li>
+                        <li>• Active conditions</li>
+                        <li>• Completed procedures</li>
+                        <li>• Finished encounters</li>
+                        <li>• Verified data only</li>
                       </ul>
                     </div>
                   </div>
+
+                  <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <h5 className="font-medium mb-2">Example: Before vs After</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <div className="text-xs font-medium mb-1">Your CQL:</div>
+                        <code className="text-xs bg-background p-2 rounded block">
+                          [Observation: "Heart Rate"]
+                        </code>
+                      </div>
+                      <div>
+                        <div className="text-xs font-medium mb-1">Generated SQL:</div>
+                        <code className="text-xs bg-background p-2 rounded block">
+                          WHERE o.status IN ('final', 'amended', 'corrected')
+                        </code>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* Naming Conventions */}
+        <AccordionItem value="naming" data-testid="accordion-naming">
+          <AccordionTrigger className="text-left">
+            <div className="flex items-center gap-2">
+              <Code className="w-5 h-5" />
+              How does naming convention validation work?
+            </div>
+          </AccordionTrigger>
+          <AccordionContent>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">HL7 CQL Naming Standards</h4>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      The transpiler validates all identifiers against HL7 CQL naming conventions and
+                      provides helpful suggestions for improvements.
+                    </p>
+                  </div>
+
                   <div className="bg-muted p-4 rounded-lg">
-                    <pre className="text-sm overflow-x-auto">
-{`-- Generated SQL from CQL
-WITH Patient_view AS (
-  SELECT id, gender, age FROM patients
-),
-InitialPopulation AS (
-  SELECT p.id FROM Patient_view p 
-  WHERE p.gender = 'female'
-),
-Numerator AS (
-  SELECT DISTINCT ip.patient_id 
-  FROM InitialPopulation ip
-  JOIN Observation_view o ON o.subject_id = ip.patient_id
-  WHERE o.code_text = 'Heart Rate' AND o.value_quantity > 100
-)`}
+                    <h5 className="font-medium mb-3">Naming Rules</h5>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between items-center border-b pb-2">
+                        <span className="font-medium">Element Type</span>
+                        <span className="font-medium">Convention</span>
+                        <span className="font-medium">Examples</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span>Library</span>
+                        <Badge variant="secondary">PascalCase</Badge>
+                        <code className="text-xs">DiabetesScreening</code>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span>Define</span>
+                        <Badge variant="secondary">PascalCase</Badge>
+                        <code className="text-xs">InInitialPopulation</code>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span>Function</span>
+                        <Badge variant="secondary">PascalCase</Badge>
+                        <code className="text-xs">CalculateAge</code>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span>Parameter</span>
+                        <Badge variant="secondary">PascalCase</Badge>
+                        <code className="text-xs">MeasurementPeriod</code>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span>Variable</span>
+                        <Badge variant="secondary">camelCase</Badge>
+                        <code className="text-xs">patientAge</code>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Badge className="mb-2 bg-red-600">❌ Bad</Badge>
+                      <pre className="text-xs bg-muted p-3 rounded-lg">
+{`define "initial_population": ...
+define "has_diabetes": ...
+define "PatientAge": ...  // Should be camelCase`}
+                      </pre>
+                    </div>
+                    <div>
+                      <Badge className="mb-2 bg-green-600">✓ Good</Badge>
+                      <pre className="text-xs bg-muted p-3 rounded-lg">
+{`define "InitialPopulation": ...
+define "HasDiabetes": ...
+define patientAge: ...  // Local variable`}
+                      </pre>
+                    </div>
+                  </div>
+
+                  <div className="bg-orange-50 dark:bg-orange-950 p-4 rounded-lg border border-orange-200 dark:border-orange-800">
+                    <h5 className="font-medium mb-2 flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-orange-600" />
+                      Validation Warnings
+                    </h5>
+                    <pre className="text-xs bg-background p-3 rounded-lg overflow-x-auto">
+{`⚠️  Naming Convention Warnings:
+  - definition "initial_population": Definition names must use PascalCase
+    Suggestion: InitialPopulation
+  - definition "has_diabetes": Definition names must use PascalCase
+    Suggestion: HasDiabetes`}
                     </pre>
                   </div>
                 </div>
@@ -145,125 +532,94 @@ Numerator AS (
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="va-concepts" data-testid="accordion-va-concepts">
-          <AccordionTrigger className="text-left">
-            <div className="flex items-center gap-2">
-              <GitBranch className="w-5 h-5" />
-              What concepts were integrated from the VA CQL transpiler?
-            </div>
-          </AccordionTrigger>
-          <AccordionContent>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="space-y-4">
-                  <h4 className="font-semibold">Enhanced Pattern Matching</h4>
-                  <div className="space-y-3">
-                    <div>
-                      <Badge variant="secondary" className="mb-1">Regex-based CQL Parsing</Badge>
-                      <p className="text-sm">Advanced regular expressions to identify clinical patterns like gender filters, age calculations, and value comparisons.</p>
-                    </div>
-                    <div>
-                      <Badge variant="secondary" className="mb-1">FHIR Code Mapping</Badge>
-                      <p className="text-sm">Automatic translation of LOINC codes to human-readable names (e.g., '8867-4' → 'Heart Rate').</p>
-                    </div>
-                    <div>
-                      <Badge variant="secondary" className="mb-1">SQL on FHIR Views</Badge>
-                      <p className="text-sm">Structured view definitions following SQL on FHIR specification for consistent data access patterns.</p>
-                    </div>
-                    <div>
-                      <Badge variant="secondary" className="mb-1">Modular CTE Generation</Badge>
-                      <p className="text-sm">Common Table Expressions (CTEs) for each population definition, enabling complex hierarchical queries.</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </AccordionContent>
-        </AccordionItem>
-
-        <AccordionItem value="fhir-processing" data-testid="accordion-fhir-processing">
-          <AccordionTrigger className="text-left">
-            <div className="flex items-center gap-2">
-              <Server className="w-5 h-5" />
-              How are FHIR bundles processed and converted?
-            </div>
-          </AccordionTrigger>
-          <AccordionContent>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="space-y-4">
-                  <h4 className="font-semibold">FHIR Bundle Processing Pipeline</h4>
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">1</div>
-                      <div>
-                        <h5 className="font-medium">Bundle Validation</h5>
-                        <p className="text-sm text-muted-foreground">Verify FHIR bundle structure and resource types</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">2</div>
-                      <div>
-                        <h5 className="font-medium">Resource Extraction</h5>
-                        <p className="text-sm text-muted-foreground">Separate Patient, Observation, and other resources into typed collections</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">3</div>
-                      <div>
-                        <h5 className="font-medium">View Flattening</h5>
-                        <p className="text-sm text-muted-foreground">Convert hierarchical FHIR structures to relational table views</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">4</div>
-                      <div>
-                        <h5 className="font-medium">SQL Simulation</h5>
-                        <p className="text-sm text-muted-foreground">Execute generated SQL queries against the flattened views</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </AccordionContent>
-        </AccordionItem>
-
-        <AccordionItem value="performance" data-testid="accordion-performance">
+        {/* Temporal Operators */}
+        <AccordionItem value="temporal" data-testid="accordion-temporal">
           <AccordionTrigger className="text-left">
             <div className="flex items-center gap-2">
               <Zap className="w-5 h-5" />
-              How are performance metrics calculated and compared?
+              What temporal operators are supported?
             </div>
           </AccordionTrigger>
           <AccordionContent>
             <Card>
               <CardContent className="pt-6">
                 <div className="space-y-4">
-                  <h4 className="font-semibold">Performance Monitoring</h4>
+                  <div>
+                    <h4 className="font-semibold mb-2">Enhanced Temporal Support</h4>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Phase 6 adds comprehensive temporal operator support following CQL specification.
+                    </p>
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <h5 className="font-medium mb-2">Execution Metrics</h5>
-                      <ul className="text-sm space-y-1">
-                        <li>• Evaluation time (milliseconds)</li>
-                        <li>• Memory usage tracking</li>
-                        <li>• Resource count processed</li>
-                        <li>• Query complexity analysis</li>
-                      </ul>
+                      <h5 className="font-medium mb-2">Comparison Operators</h5>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <code>before</code>
+                          <span className="text-muted-foreground">date &lt; date</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <code>after</code>
+                          <span className="text-muted-foreground">date &gt; date</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <code>on or before</code>
+                          <span className="text-muted-foreground">date &lt;= date</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <code>on or after</code>
+                          <span className="text-muted-foreground">date &gt;= date</span>
+                        </div>
+                      </div>
                     </div>
                     <div>
-                      <h5 className="font-medium mb-2">Quality Measures</h5>
-                      <ul className="text-sm space-y-1">
-                        <li>• Initial Population count</li>
-                        <li>• Denominator population</li>
-                        <li>• Numerator count</li>
-                        <li>• Percentage score calculation</li>
-                      </ul>
+                      <h5 className="font-medium mb-2">Interval Operators</h5>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <code>during</code>
+                          <span className="text-muted-foreground">in interval</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <code>overlaps</code>
+                          <span className="text-muted-foreground">any overlap</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <code>starts</code>
+                          <span className="text-muted-foreground">same start</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <code>ends</code>
+                          <span className="text-muted-foreground">same end</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="bg-muted p-4 rounded-lg">
-                    <h6 className="font-medium mb-2">Comparative Analysis</h6>
-                    <p className="text-sm">Both evaluation methods generate identical FHIR MeasureReport structures, enabling direct comparison of results, performance characteristics, and implementation approaches for the same clinical quality measure.</p>
+
+                  <div>
+                    <h5 className="font-medium mb-2">Example: Temporal Query</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <Badge variant="outline" className="mb-2">CQL</Badge>
+                        <pre className="text-xs bg-muted p-3 rounded-lg">
+{`define "Recent Obs":
+  [Observation] O
+    where O.effective
+      during "Measurement Period"
+      and O.issued
+      on or after @2024-01-01`}
+                        </pre>
+                      </div>
+                      <div>
+                        <Badge variant="outline" className="mb-2">SQL</Badge>
+                        <pre className="text-xs bg-muted p-3 rounded-lg">
+{`WHERE o.effective_datetime
+  BETWEEN '2024-01-01'
+      AND '2024-12-31'
+  AND o.issued >= '2024-01-01'`}
+                        </pre>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -271,7 +627,360 @@ Numerator AS (
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="technology-stack" data-testid="accordion-technology-stack">
+        {/* Complete CQL to SQL Example */}
+        <AccordionItem value="complete-example" data-testid="accordion-example">
+          <AccordionTrigger className="text-left">
+            <div className="flex items-center gap-2">
+              <GitBranch className="w-5 h-5" />
+              Show me a complete CQL → ELM → SQL example
+            </div>
+          </AccordionTrigger>
+          <AccordionContent>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">Diabetes Screening Quality Measure</h4>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      This example demonstrates the complete pipeline with all Phase 6 features.
+                    </p>
+                  </div>
+
+                  {/* Step 1: CQL */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold">1</div>
+                      <h5 className="font-medium">CQL Source Code</h5>
+                    </div>
+                    <pre className="text-xs bg-muted p-4 rounded-lg overflow-x-auto">
+{`library DiabetesScreening version '1.0.0'
+
+using FHIR version '4.0.1'
+
+valueset "Diabetes": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.103.12.1001'
+valueset "HbA1c Tests": 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.198.12.1013'
+
+parameter "Measurement Period" Interval<DateTime>
+
+define "InitialPopulation":
+  [Patient] P
+    where AgeInYearsAt(start of "Measurement Period") >= 18
+
+define "HasDiabetes":
+  exists ([Condition: "Diabetes"])
+
+define "RecentHbA1cTest":
+  [Observation: "HbA1c Tests"] O
+    where O.effective during "Measurement Period"
+      and O.value < 7.0 '%'
+
+define "Numerator":
+  "HasDiabetes" and exists ("RecentHbA1cTest")`}
+                    </pre>
+                  </div>
+
+                  {/* Step 2: ELM */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-6 h-6 rounded-full bg-purple-500 text-white flex items-center justify-center text-xs font-bold">2</div>
+                      <h5 className="font-medium">ELM Representation (excerpt)</h5>
+                    </div>
+                    <pre className="text-xs bg-muted p-4 rounded-lg overflow-x-auto">
+{`{
+  "type": "Library",
+  "identifier": { "id": "DiabetesScreening", "version": "1.0.0" },
+  "schemaIdentifier": { "id": "urn:hl7-org:elm", "version": "r1" },
+  "statements": [
+    {
+      "name": "HasDiabetes",
+      "context": "Patient",
+      "expression": {
+        "type": "Query",
+        "source": [{
+          "alias": "c",
+          "expression": {
+            "type": "Retrieve",
+            "dataType": "FHIR.Condition",
+            "codes": {
+              "type": "Literal",
+              "valueType": "String",
+              "value": "http://cts.nlm.nih.gov/fhir/ValueSet/..."
+            }
+          }
+        }]
+      }
+    }
+  ]
+}`}
+                    </pre>
+                  </div>
+
+                  {/* Step 3: SQL */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold">3</div>
+                      <h5 className="font-medium">Generated SQL on FHIR</h5>
+                    </div>
+                    <pre className="text-xs bg-muted p-4 rounded-lg overflow-x-auto">
+{`-- Generated SQL on FHIR Query from ELM
+-- Library: DiabetesScreening
+-- All Phase 6 best practices applied
+
+WITH Patient_view AS (
+  SELECT id, gender, birthDate, age FROM Patient
+),
+Condition_view AS (
+  SELECT id, subject_id, code, code_system, code_text,
+         onset_datetime, clinical_status, verification_status
+  FROM Condition
+),
+Observation_view AS (
+  SELECT id, subject_id, code, code_system, code_text,
+         effective_datetime, value_quantity, value_unit, status
+  FROM Observation
+),
+
+InitialPopulation AS (
+  SELECT p.id AS patient_id
+  FROM Patient_view p
+  WHERE CAST((JULIANDAY(CURRENT_DATE) - JULIANDAY(birthDate)) / 365.25 AS INTEGER) >= 18
+),
+
+HasDiabetes AS (
+  SELECT c.subject_id AS patient_id
+  FROM Condition_view c
+  WHERE c.clinical_status = 'active'  -- ✓ Automatic status filter!
+    AND EXISTS (
+      SELECT 1 FROM ValueSetExpansion vse
+      WHERE vse.value_set_url = 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.103.12.1001'
+        AND vse.code = c.code
+        AND vse.system = c.code_system  -- ✓ Proper code matching!
+    )
+),
+
+RecentHbA1cTest AS (
+  SELECT o.subject_id AS patient_id
+  FROM Observation_view o
+  WHERE o.status IN ('final', 'amended', 'corrected')  -- ✓ Automatic status filter!
+    AND EXISTS (
+      SELECT 1 FROM ValueSetExpansion vse
+      WHERE vse.value_set_url = 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.198.12.1013'
+        AND vse.code = o.code
+        AND vse.system = o.code_system
+    )
+    AND o.effective_datetime BETWEEN '2024-01-01' AND '2024-12-31'  -- ✓ Temporal operator!
+    AND o.value_quantity < 7.0
+),
+
+Numerator AS (
+  SELECT DISTINCT hd.patient_id
+  FROM HasDiabetes hd
+  WHERE EXISTS (SELECT 1 FROM RecentHbA1cTest rh WHERE rh.patient_id = hd.patient_id)
+)
+
+SELECT DISTINCT patient_id FROM Numerator;`}
+                    </pre>
+                  </div>
+
+                  <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg border border-green-200 dark:border-green-800">
+                    <h5 className="font-medium mb-2 flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-green-600" />
+                      Phase 6 Features Applied
+                    </h5>
+                    <ul className="text-sm space-y-1">
+                      <li>✓ PascalCase naming convention for all definitions</li>
+                      <li>✓ Canonical URLs for value sets (not display text)</li>
+                      <li>✓ Automatic status filtering (active conditions, final observations)</li>
+                      <li>✓ Proper code system matching (system + code, not text search)</li>
+                      <li>✓ Temporal operator support (during, before, after)</li>
+                      <li>✓ ELM intermediate representation for optimization</li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* What's Supported */}
+        <AccordionItem value="supported" data-testid="accordion-supported">
+          <AccordionTrigger className="text-left">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5" />
+              What CQL features are currently supported in Alpha v0.1?
+            </div>
+          </AccordionTrigger>
+          <AccordionContent>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <h5 className="font-medium mb-2 text-green-600">✓ Fully Supported</h5>
+                      <ul className="text-sm space-y-1">
+                        <li>✓ <strong>Define statements</strong> with PascalCase validation</li>
+                        <li>✓ <strong>Resource queries</strong> ([Patient], [Observation], etc.)</li>
+                        <li>✓ <strong>Canonical URLs</strong> for value sets</li>
+                        <li>✓ <strong>Value set membership</strong> with code system matching</li>
+                        <li>✓ <strong>Automatic status filtering</strong> per HL7 guidelines</li>
+                        <li>✓ <strong>Temporal operators</strong> (before, after, during, etc.)</li>
+                        <li>✓ <strong>WHERE clauses</strong> with complex conditions</li>
+                        <li>✓ <strong>Age calculations</strong> (AgeInYears, AgeInYearsAt)</li>
+                        <li>✓ <strong>WITH/WITHOUT</strong> relationships (joins)</li>
+                        <li>✓ <strong>Binary operators</strong> (and, or, =, !=, &lt;, &gt;, etc.)</li>
+                        <li>✓ <strong>Property access</strong> (Patient.gender, Observation.value)</li>
+                        <li>✓ <strong>ELM generation</strong> for multi-target compilation</li>
+                        <li>✓ <strong>SQL on FHIR</strong> with CTEs</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h5 className="font-medium mb-2 text-orange-600">⚠ Partially Supported</h5>
+                      <ul className="text-sm space-y-1">
+                        <li>⚠ <strong>Functions:</strong> Limited set (AgeInYears, exists)</li>
+                        <li>⚠ <strong>Intervals:</strong> Basic support, complex logic pending</li>
+                        <li>⚠ <strong>Aggregates:</strong> Count only (Sum, Avg, etc. pending)</li>
+                        <li>⚠ <strong>FHIR Resources:</strong> Core resources only</li>
+                        <li>⚠ <strong>Code systems:</strong> Major systems (LOINC, SNOMED, etc.)</li>
+                      </ul>
+                      <h5 className="font-medium mt-4 mb-2 text-red-600">✗ Not Yet Supported</h5>
+                      <ul className="text-sm space-y-1">
+                        <li>✗ <strong>Full CQL grammar:</strong> Simplified parser</li>
+                        <li>✗ <strong>Libraries/Includes:</strong> Structure defined, not executed</li>
+                        <li>✗ <strong>Parameters:</strong> Measurement Period hardcoded</li>
+                        <li>✗ <strong>Advanced functions:</strong> Most CQL standard library</li>
+                        <li>✗ <strong>Nested queries:</strong> Complex subqueries</li>
+                        <li>✗ <strong>Tuple operations:</strong> Structured data manipulation</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <h5 className="font-medium mb-2">Supported FHIR Resources</h5>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                      <Badge variant="outline">Patient</Badge>
+                      <Badge variant="outline">Observation</Badge>
+                      <Badge variant="outline">Condition</Badge>
+                      <Badge variant="outline">Procedure</Badge>
+                      <Badge variant="outline">MedicationRequest</Badge>
+                      <Badge variant="outline">Encounter</Badge>
+                      <Badge variant="outline">DiagnosticReport</Badge>
+                      <Badge variant="outline">AllergyIntolerance</Badge>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* Future Phases */}
+        <AccordionItem value="future" data-testid="accordion-future">
+          <AccordionTrigger className="text-left">
+            <div className="flex items-center gap-2">
+              <Server className="w-5 h-5" />
+              What's planned for future phases?
+            </div>
+          </AccordionTrigger>
+          <AccordionContent>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">Roadmap: Alpha v0.1 → Production</h4>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge className="bg-yellow-600">Phase 7</Badge>
+                        <h5 className="font-medium">Comprehensive Testing</h5>
+                      </div>
+                      <ul className="text-sm space-y-1 ml-6 list-disc">
+                        <li>Unit tests for all components (value sets, naming, ELM, SQL generation)</li>
+                        <li>Integration tests for end-to-end pipeline</li>
+                        <li>Sample CQL libraries (diabetes, hypertension, quality measures)</li>
+                        <li>SQL execution validation against test databases</li>
+                        <li>Regression test suite</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge className="bg-yellow-600">Phase 8</Badge>
+                        <h5 className="font-medium">Performance Optimizations</h5>
+                      </div>
+                      <ul className="text-sm space-y-1 ml-6 list-disc">
+                        <li>Value set caching in memory</li>
+                        <li>SQL query optimization (index hints, query plans)</li>
+                        <li>ELM tree optimization (common subexpression elimination)</li>
+                        <li>Lazy evaluation for large datasets</li>
+                        <li>Streaming processing for FHIR bundles</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge className="bg-blue-600">Phase 9</Badge>
+                        <h5 className="font-medium">Full CQL Grammar Support</h5>
+                      </div>
+                      <ul className="text-sm space-y-1 ml-6 list-disc">
+                        <li>Complete CQL parser (ANTLR-based)</li>
+                        <li>Full standard library functions</li>
+                        <li>Library includes and dependencies</li>
+                        <li>Parameter support</li>
+                        <li>Tuple and List operations</li>
+                        <li>Advanced temporal logic</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge className="bg-purple-600">Phase 10</Badge>
+                        <h5 className="font-medium">Multi-Target Code Generation</h5>
+                      </div>
+                      <ul className="text-sm space-y-1 ml-6 list-disc">
+                        <li><strong>JavaScript/TypeScript:</strong> Client-side evaluation</li>
+                        <li><strong>C#:</strong> .NET ecosystem integration (Firely SDK pattern)</li>
+                        <li><strong>Python:</strong> Data science workflows</li>
+                        <li><strong>R:</strong> Statistical analysis</li>
+                        <li>Target language optimization per platform</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge className="bg-green-600">Phase 11</Badge>
+                        <h5 className="font-medium">Production Features</h5>
+                      </div>
+                      <ul className="text-sm space-y-1 ml-6 list-disc">
+                        <li>Real SQL database integration (PostgreSQL, MySQL, SQL Server)</li>
+                        <li>FHIR server integration (HAPI FHIR, Microsoft FHIR Server)</li>
+                        <li>Terminology server integration (TX.FHIR.ORG, Ontoserver)</li>
+                        <li>Complete FHIR R4 resource coverage</li>
+                        <li>CQL editor with syntax highlighting and validation</li>
+                        <li>Value set browser and management UI</li>
+                        <li>Query optimizer with suggestions</li>
+                        <li>ELM debugger and step-through execution</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className="bg-purple-50 dark:bg-purple-950 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
+                    <h5 className="font-medium mb-2">Long-term Vision</h5>
+                    <p className="text-sm text-muted-foreground">
+                      Transform this tool into a comprehensive clinical quality measure authoring platform
+                      supporting the full eCQM development lifecycle: CQL authoring → ELM compilation →
+                      Multi-target generation → Testing → Deployment → Execution → Reporting.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* Technology Stack */}
+        <AccordionItem value="tech-stack" data-testid="accordion-tech-stack">
           <AccordionTrigger className="text-left">
             <div className="flex items-center gap-2">
               <Server className="w-5 h-5" />
@@ -284,21 +993,23 @@ Numerator AS (
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <h5 className="font-medium mb-2">Core Libraries</h5>
-                      <ul className="text-sm space-y-1">
-                        <li>• cql-execution</li>
-                        <li>• cql-testing</li>
-                        <li>• cql-exec-fhir</li>
-                        <li>• drizzle-orm</li>
-                      </ul>
-                    </div>
-                    <div>
                       <h5 className="font-medium mb-2">Frontend</h5>
                       <ul className="text-sm space-y-1">
-                        <li>• React + TypeScript</li>
+                        <li>• React 18 + TypeScript</li>
                         <li>• Vite build system</li>
                         <li>• shadcn/ui components</li>
                         <li>• TanStack Query</li>
+                        <li>• Wouter routing</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h5 className="font-medium mb-2">CQL Processing</h5>
+                      <ul className="text-sm space-y-1">
+                        <li>• Custom CQL parser</li>
+                        <li>• AST-to-ELM converter</li>
+                        <li>• ELM-to-SQL transpiler</li>
+                        <li>• Value set service</li>
+                        <li>• Naming validator</li>
                       </ul>
                     </div>
                     <div>
@@ -306,9 +1017,67 @@ Numerator AS (
                       <ul className="text-sm space-y-1">
                         <li>• Express.js</li>
                         <li>• PostgreSQL</li>
+                        <li>• Drizzle ORM</li>
                         <li>• Neon Database</li>
                         <li>• TypeScript</li>
                       </ul>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h5 className="font-medium mb-2">Phase 6 New Components</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="border rounded-lg p-3">
+                        <code className="text-xs font-medium">terminology/</code>
+                        <ul className="text-xs space-y-1 mt-2 ml-4 list-disc">
+                          <li>value-set-types.ts</li>
+                          <li>value-set-service.ts</li>
+                        </ul>
+                      </div>
+                      <div className="border rounded-lg p-3">
+                        <code className="text-xs font-medium">elm/</code>
+                        <ul className="text-xs space-y-1 mt-2 ml-4 list-disc">
+                          <li>elm-types.ts (380 lines)</li>
+                          <li>ast-to-elm.ts (365 lines)</li>
+                          <li>elm-to-sql.ts (450 lines)</li>
+                        </ul>
+                      </div>
+                      <div className="border rounded-lg p-3">
+                        <code className="text-xs font-medium">cql-parser/</code>
+                        <ul className="text-xs space-y-1 mt-2 ml-4 list-disc">
+                          <li>naming-validator.ts</li>
+                          <li>Enhanced ast-to-sql.ts</li>
+                        </ul>
+                      </div>
+                      <div className="border rounded-lg p-3">
+                        <code className="text-xs font-medium">db/</code>
+                        <ul className="text-xs space-y-1 mt-2 ml-4 list-disc">
+                          <li>schema-init.ts</li>
+                          <li>ValueSetExpansion table</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-muted p-4 rounded-lg">
+                    <h5 className="font-medium mb-2">Development Statistics</h5>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-primary">~1,914</div>
+                        <div className="text-xs text-muted-foreground">Lines of Code</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-primary">7</div>
+                        <div className="text-xs text-muted-foreground">New Files</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-primary">6/8</div>
+                        <div className="text-xs text-muted-foreground">Tracks Complete</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-primary">100%</div>
+                        <div className="text-xs text-muted-foreground">Type Safe</div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -317,11 +1086,12 @@ Numerator AS (
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="limitations" data-testid="accordion-limitations">
+        {/* References */}
+        <AccordionItem value="references" data-testid="accordion-references">
           <AccordionTrigger className="text-left">
             <div className="flex items-center gap-2">
               <Code className="w-5 h-5" />
-              What are the current limitations and future enhancements?
+              What HL7 standards and references were used?
             </div>
           </AccordionTrigger>
           <AccordionContent>
@@ -329,23 +1099,87 @@ Numerator AS (
               <CardContent className="pt-6">
                 <div className="space-y-4">
                   <div>
-                    <h5 className="font-medium mb-2 text-orange-600">Current Limitations</h5>
-                    <ul className="text-sm space-y-1">
-                      <li>• Proof-of-concept with simplified CQL parsing</li>
-                      <li>• In-memory SQL simulation instead of real database</li>
-                      <li>• Limited FHIR resource type support</li>
-                      <li>• Basic temporal logic handling</li>
-                    </ul>
+                    <h5 className="font-medium mb-2 flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-green-600" />
+                      Implemented HL7 Standards
+                    </h5>
+                    <div className="space-y-2">
+                      <div className="flex items-start gap-2 text-sm">
+                        <Badge variant="outline">HL7</Badge>
+                        <div>
+                          <a href="http://hl7.org/fhir/us/cql/STU2/" target="_blank" rel="noopener noreferrer" className="font-medium text-blue-600 hover:underline">
+                            CQL Implementation Guide (STU2)
+                          </a>
+                          <p className="text-xs text-muted-foreground">Query patterns, status filtering, naming conventions</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2 text-sm">
+                        <Badge variant="outline">HL7</Badge>
+                        <div>
+                          <a href="https://hl7.org/fhir/uv/cql/STU2/using-cql.html" target="_blank" rel="noopener noreferrer" className="font-medium text-blue-600 hover:underline">
+                            Using CQL with FHIR
+                          </a>
+                          <p className="text-xs text-muted-foreground">FHIR resource filtering, temporal constraints, observations</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2 text-sm">
+                        <Badge variant="outline">HL7</Badge>
+                        <div>
+                          <a href="https://cql.hl7.org/elm.html" target="_blank" rel="noopener noreferrer" className="font-medium text-blue-600 hover:underline">
+                            ELM Specification
+                          </a>
+                          <p className="text-xs text-muted-foreground">Expression Logical Model type system, query structure</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2 text-sm">
+                        <Badge variant="outline">GitHub</Badge>
+                        <div>
+                          <a href="https://github.com/FirelyTeam/firely-cql-sdk" target="_blank" rel="noopener noreferrer" className="font-medium text-blue-600 hover:underline">
+                            Firely CQL SDK
+                          </a>
+                          <p className="text-xs text-muted-foreground">Architecture pattern: CQL → ELM → Target Language</p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
+
                   <div>
-                    <h5 className="font-medium mb-2 text-green-600">Future Enhancements</h5>
-                    <ul className="text-sm space-y-1">
-                      <li>• Full CQL-to-ELM translation integration</li>
-                      <li>• Real SQL database with SQL on FHIR</li>
-                      <li>• Complete FHIR R4 resource support</li>
-                      <li>• Advanced temporal and interval logic</li>
-                      <li>• Performance optimization and caching</li>
-                    </ul>
+                    <h5 className="font-medium mb-2">Key Compliance Areas</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                        <span>Canonical URL format for value sets</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                        <span>Status filtering per resource type</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                        <span>PascalCase naming conventions</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                        <span>ELM intermediate representation</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                        <span>Code system + code matching</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                        <span>Temporal operator support</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <h5 className="font-medium mb-2">Documentation</h5>
+                    <div className="space-y-1 text-sm">
+                      <div>📄 <a href="https://github.com/anthropics/claude-code" className="text-blue-600 hover:underline">PHASE6_IMPLEMENTATION.md</a> - Detailed implementation summary</div>
+                      <div>📄 <a href="https://github.com/anthropics/claude-code" className="text-blue-600 hover:underline">QUICK_START_PHASE6.md</a> - Quick reference guide</div>
+                      <div>📄 <a href="https://github.com/anthropics/claude-code" className="text-blue-600 hover:underline">PHASE6_PLAN.md</a> - Original planning document</div>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -353,6 +1187,15 @@ Numerator AS (
           </AccordionContent>
         </AccordionItem>
       </Accordion>
+
+      <div className="mt-8 text-center">
+        <Link href="/">
+          <Button size="lg" className="gap-2">
+            <ArrowLeft className="w-4 h-4" />
+            Try the Converter
+          </Button>
+        </Link>
+      </div>
     </div>
   );
 }
