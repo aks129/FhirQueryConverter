@@ -193,6 +193,7 @@ DiagnosticReport_view AS (
     // Determine source table
     let sourceTable = '';
     let alias = 'p';
+    let isIdentifierSource = false;
 
     if (query.source.type === 'ResourceReference') {
       sourceTable = `${query.source.resourceType}_view`;
@@ -201,16 +202,25 @@ DiagnosticReport_view AS (
       // Reference to another define
       const defineName = (query.source as IdentifierNode).name.replace(/\s+/g, '');
       if (this.context.cteNames.has(defineName)) {
-        return `${indent}SELECT patient_id FROM ${defineName}`;
+        // Only return early if there are no WHERE or relationships
+        if (!query.where && (!query.relationships || query.relationships.length === 0)) {
+          return `${indent}SELECT patient_id FROM ${defineName}`;
+        }
+        sourceTable = defineName;
+        alias = defineName[0].toLowerCase();
+        isIdentifierSource = true;
+      } else {
+        sourceTable = `${query.source.name}_view`;
       }
-      sourceTable = `${query.source.name}_view`;
     }
 
     // Add additional fields if needed
     const hasAdditionalFields = query.source.type === 'ResourceReference' &&
         query.source.resourceType === 'Patient';
 
-    lines.push(`${indent}SELECT ${alias}.id AS patient_id${hasAdditionalFields ? ',' : ''}`);
+    // For identifier sources, select from patient_id column, not id
+    const selectColumn = isIdentifierSource ? 'patient_id' : `${alias}.id AS patient_id`;
+    lines.push(`${indent}SELECT ${selectColumn}${hasAdditionalFields ? ',' : ''}`);
 
     if (hasAdditionalFields) {
       lines.push(`${indent}       ${alias}.gender,`);
@@ -220,18 +230,37 @@ DiagnosticReport_view AS (
 
     lines.push(`${indent}FROM ${sourceTable} ${alias}`);
 
-    // Generate WHERE clause
-    if (query.where) {
-      const whereCondition = this.generateWhereCondition(query.where, alias);
-      lines.push(`${indent}WHERE ${whereCondition}`);
-    }
-
     // Generate relationship clauses (WITH/WITHOUT)
+    // Collect WHERE conditions from relationships to add to main WHERE clause
+    const relationshipWhereConditions: string[] = [];
     if (query.relationships && query.relationships.length > 0) {
       query.relationships.forEach(rel => {
-        const relSql = this.generateRelationship(rel, alias, indent);
-        lines.push(relSql);
+        const relSql = this.generateRelationship(rel, alias, indent, isIdentifierSource);
+        lines.push(relSql.join);
+
+        // If relationship has a condition, add it to WHERE clause
+        if (relSql.whereCondition) {
+          relationshipWhereConditions.push(relSql.whereCondition);
+        }
       });
+    }
+
+    // Generate WHERE clause (after JOINs)
+    const whereConditions: string[] = [];
+
+    // Add relationship conditions
+    if (relationshipWhereConditions.length > 0) {
+      whereConditions.push(...relationshipWhereConditions);
+    }
+
+    // Add main WHERE condition
+    if (query.where) {
+      const whereCondition = this.generateWhereCondition(query.where, alias);
+      whereConditions.push(whereCondition);
+    }
+
+    if (whereConditions.length > 0) {
+      lines.push(`${indent}WHERE ${whereConditions.join(' AND ')}`);
     }
 
     return lines.join('\n');
@@ -244,20 +273,28 @@ DiagnosticReport_view AS (
     return `${indent}SELECT ${alias}.id FROM ${table} ${alias}`;
   }
 
-  private generateRelationship(rel: RelationshipClauseNode, parentAlias: string, indent: string): string {
+  private generateRelationship(
+    rel: RelationshipClauseNode,
+    parentAlias: string,
+    indent: string,
+    parentIsIdentifierSource: boolean
+  ): { join: string; whereCondition?: string } {
     const joinType = rel.relationship === 'with' ? 'LEFT JOIN' : 'LEFT JOIN';
     const resourceType = rel.source.resourceType;
     const table = `${resourceType}_view`;
     const alias = rel.alias || resourceType[0].toLowerCase();
 
-    let join = `${indent}${joinType} ${table} ${alias} ON ${alias}.subject_id = ${parentAlias}.id`;
+    // For identifier sources (CTEs), the parent has patient_id, not id
+    const parentColumn = parentIsIdentifierSource ? 'patient_id' : 'id';
+    const join = `${indent}${joinType} ${table} ${alias} ON ${alias}.subject_id = ${parentAlias}.${parentColumn}`;
 
+    // Return condition separately to add to WHERE clause
+    let whereCondition: string | undefined;
     if (rel.condition) {
-      const condition = this.generateExpression(rel.condition);
-      join += `\n${indent}  AND ${condition}`;
+      whereCondition = this.generateExpression(rel.condition);
     }
 
-    return join;
+    return { join, whereCondition };
   }
 
   private generateWhereCondition(expr: CqlExpressionNode, alias: string): string {
@@ -287,8 +324,11 @@ DiagnosticReport_view AS (
     const operator = this.mapOperatorToSql(expr.operator);
 
     // Special handling for temporal operators
-    if (expr.operator === 'during' && right.includes('Measurement Period')) {
-      return `BETWEEN '${this.context.measurementPeriod?.start}' AND '${this.context.measurementPeriod?.end}'`;
+    if (expr.operator === 'during') {
+      // Check if right side is measurement period reference
+      if (right.includes('Measurement Period') || right.includes('Interval')) {
+        return `${left} BETWEEN '${this.context.measurementPeriod?.start}' AND '${this.context.measurementPeriod?.end}'`;
+      }
     }
 
     return `${left} ${operator} ${right}`;
@@ -316,7 +356,20 @@ DiagnosticReport_view AS (
       ? (expr.object as IdentifierNode).name[0].toLowerCase()
       : this.generateExpression(expr.object);
 
-    return `${object}.${expr.member}`;
+    // Map CQL property names to SQL column names
+    const columnMapping: { [key: string]: string } = {
+      'effective': 'effective_datetime',
+      'value': 'value_quantity',
+      'code': 'code_text',
+      'onset': 'onset_datetime',
+      'performed': 'performed_datetime',
+      'medication': 'medication_text',
+      'class': 'class_code',
+      'type': 'type_text',
+    };
+
+    const columnName = columnMapping[expr.member] || expr.member;
+    return `${object}.${columnName}`;
   }
 
   private generateFunctionCall(expr: FunctionCallNode): string {

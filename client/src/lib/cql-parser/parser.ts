@@ -315,6 +315,28 @@ export class CqlParser {
           name: (expr as IdentifierNode).name,
           arguments: args,
         };
+      } else if (expr.type === 'Identifier') {
+        // Check for alias followed by WITH/WITHOUT (query with identifier source)
+        // Example: "Denominator" D with [Observation] ...
+        if (this.check(TokenType.IDENTIFIER)) {
+          const alias = this.advance().value;
+
+          if (this.checkAny(TokenType.WITH, TokenType.WITHOUT)) {
+            // Convert to query with alias
+            const query = this.parseQuery(expr as IdentifierNode);
+            query.alias = alias;
+            return query;
+          } else {
+            // Just an alias, not a query - backtrack
+            this.position--;
+            break;
+          }
+        } else if (this.checkAny(TokenType.WITH, TokenType.WITHOUT, TokenType.WHERE)) {
+          // Query without alias
+          return this.parseQuery(expr as IdentifierNode);
+        } else {
+          break;
+        }
       } else {
         break;
       }
