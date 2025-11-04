@@ -223,6 +223,7 @@ export default function Home() {
               sqlResult={sqlResult}
               cqlLoading={cqlLoading}
               sqlLoading={sqlLoading}
+              cqlCode={cqlCode}
             />
           </div>
         </div>

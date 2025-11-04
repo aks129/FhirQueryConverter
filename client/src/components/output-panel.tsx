@@ -4,8 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { JsonViewer } from "./json-viewer";
+import { SqlViewer } from "./sql-viewer";
+import { TransformationView } from "./transformation-view";
+import { SchemaViewer } from "./schema-viewer";
 import { ExecutionResult, SqlExecutionResult, LogEntry } from "@/types/fhir";
-import { CheckCircle, Clock, MemoryStick, Database, Download, Trash2, Copy } from "lucide-react";
+import { CheckCircle, Clock, MemoryStick, Database, Download, Trash2, Copy, Workflow } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface OutputPanelProps {
@@ -13,9 +16,10 @@ interface OutputPanelProps {
   sqlResult: SqlExecutionResult | null;
   cqlLoading: boolean;
   sqlLoading: boolean;
+  cqlCode?: string;
 }
 
-export function OutputPanel({ cqlResult, sqlResult, cqlLoading, sqlLoading }: OutputPanelProps) {
+export function OutputPanel({ cqlResult, sqlResult, cqlLoading, sqlLoading, cqlCode = '' }: OutputPanelProps) {
   const [activeTab, setActiveTab] = useState("cql-output");
   const { toast } = useToast();
 
@@ -89,18 +93,26 @@ export function OutputPanel({ cqlResult, sqlResult, cqlLoading, sqlLoading }: Ou
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 h-full flex flex-col">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="cql-output" className="flex items-center space-x-2">
-            <i className="fas fa-code"></i>
-            <span>CQL Output</span>
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="cql-output" className="flex items-center space-x-1 text-xs">
+            <i className="fas fa-code text-xs"></i>
+            <span>CQL</span>
           </TabsTrigger>
-          <TabsTrigger value="sql-output" className="flex items-center space-x-2">
-            <Database className="w-4 h-4" />
-            <span>SQL on FHIR Output</span>
+          <TabsTrigger value="sql-output" className="flex items-center space-x-1 text-xs">
+            <Database className="w-3 h-3" />
+            <span>SQL</span>
           </TabsTrigger>
-          <TabsTrigger value="logs" className="flex items-center space-x-2">
-            <i className="fas fa-list-alt"></i>
-            <span>Logs & Status</span>
+          <TabsTrigger value="transformation" className="flex items-center space-x-1 text-xs">
+            <Workflow className="w-3 h-3" />
+            <span>Transform</span>
+          </TabsTrigger>
+          <TabsTrigger value="schema" className="flex items-center space-x-1 text-xs">
+            <Database className="w-3 h-3" />
+            <span>Schema</span>
+          </TabsTrigger>
+          <TabsTrigger value="logs" className="flex items-center space-x-1 text-xs">
+            <i className="fas fa-list-alt text-xs"></i>
+            <span>Logs</span>
           </TabsTrigger>
         </TabsList>
 
@@ -192,26 +204,13 @@ export function OutputPanel({ cqlResult, sqlResult, cqlLoading, sqlLoading }: Ou
                 </div>
               </Card>
 
-              {/* Generated SQL Query */}
-              <div className="border border-gray-300 rounded-md overflow-hidden" style={{ height: '45%' }}>
-                <div className="bg-gray-50 px-4 py-2 border-b border-gray-300 flex justify-between items-center">
-                  <h3 className="text-sm font-medium text-gray-900">Generated SQL Query</h3>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => copyToClipboard(sqlResult.generatedSql, "SQL query copied to clipboard")}
-                    className="text-xs text-gray-600 hover:text-gray-900"
-                  >
-                    <Copy className="w-3 h-3 mr-1" />
-                    Copy
-                  </Button>
-                </div>
-                <div className="p-4 bg-white overflow-auto font-mono text-sm h-full">
-                  <pre className="text-gray-800 whitespace-pre-wrap">
-                    {sqlResult.generatedSql}
-                  </pre>
-                </div>
-              </div>
+              {/* Generated SQL Query with Syntax Highlighting */}
+              <SqlViewer
+                sql={sqlResult.generatedSql}
+                title="Generated SQL Query"
+                showExport={true}
+                maxHeight="400px"
+              />
 
               <JsonViewer
                 title="SQL-Generated MeasureReport"
@@ -228,6 +227,30 @@ export function OutputPanel({ cqlResult, sqlResult, cqlLoading, sqlLoading }: Ou
               </div>
             </div>
           )}
+        </TabsContent>
+
+        {/* Transformation View Tab */}
+        <TabsContent value="transformation" className="flex-1 p-6">
+          {sqlResult && cqlCode ? (
+            <TransformationView
+              cqlCode={cqlCode}
+              generatedSql={sqlResult.generatedSql}
+              logs={sqlResult.logs.map(log => log.message)}
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full text-gray-500">
+              <div className="text-center">
+                <Workflow className="w-16 h-16 mx-auto mb-4" />
+                <p>No transformation data available</p>
+                <p className="text-sm">Run SQL on FHIR evaluation to see the transformation steps</p>
+              </div>
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Database Schema Tab */}
+        <TabsContent value="schema" className="flex-1 p-6">
+          <SchemaViewer />
         </TabsContent>
 
         {/* Logs & Status Tab */}
