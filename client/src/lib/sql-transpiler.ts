@@ -1,8 +1,10 @@
 import { FhirBundle, MeasureReport, SqlExecutionResult, LogEntry } from "@/types/fhir";
 import { flattenBundleToViews } from "./fhir-utils";
+import initSqlJs, { Database } from "sql.js";
 
 interface SqlDatabase {
   exec(sql: string): Array<{ columns: string[]; values: any[][] }>;
+  close(): void;
 }
 
 /**
@@ -144,30 +146,31 @@ SELECT
   private generateBaseFhirViews(): string {
     return `-- Base FHIR views following SQL on FHIR specification
 Patient_view AS (
-  SELECT 
+  SELECT
     id,
     gender,
     birthDate,
-    EXTRACT(YEAR FROM CURRENT_DATE) - EXTRACT(YEAR FROM CAST(birthDate AS DATE)) AS age
-  FROM (VALUES 
-    ('patient-1', 'female', '1980-05-15'),
-    ('patient-2', 'male', '1975-08-22'),
-    ('patient-3', 'female', '1990-12-03')
-  ) AS patients(id, gender, birthDate)
+    age
+  FROM Patient
 ),
 Observation_view AS (
-  SELECT 
+  SELECT
     id,
     subject_id,
     code_text,
     effective_datetime,
     value_quantity,
     value_unit
-  FROM (VALUES 
-    ('obs-1', 'patient-1', 'Heart Rate', '2024-03-15T10:30:00Z', 105, 'beats/min'),
-    ('obs-2', 'patient-2', 'Heart Rate', '2024-02-20T14:15:00Z', 95, 'beats/min'),
-    ('obs-3', 'patient-3', 'Heart Rate', '2024-04-10T09:45:00Z', 110, 'beats/min')
-  ) AS observations(id, subject_id, code_text, effective_datetime, value_quantity, value_unit)
+  FROM Observation
+),
+Condition_view AS (
+  SELECT
+    id,
+    subject_id,
+    code_text,
+    onset_datetime,
+    clinical_status
+  FROM Condition
 )`;
   }
 
@@ -271,96 +274,159 @@ Numerator AS (
   private async executeSql(sql: string, fhirBundle: FhirBundle): Promise<{ [key: string]: number }> {
     // Flatten FHIR bundle to SQL views
     const views = flattenBundleToViews(fhirBundle);
+    this.addLog('INFO', `Flattened FHIR bundle: ${views.patients.length} patients, ${views.observations.length} observations, ${views.conditions.length} conditions`);
 
-    // Create in-memory database (simulation for POC)
+    // Create in-memory database with real SQL.js
     const db = await this.createInMemoryDatabase(views);
 
     try {
+      // Execute the generated SQL query
+      this.addLog('INFO', 'Executing generated SQL query');
       const result = db.exec(sql);
-      
+
       if (result.length === 0 || result[0].values.length === 0) {
-        throw new Error('SQL query returned no results');
+        this.addLog('ERROR', 'SQL query returned no results');
+        throw new Error('SQL query returned no results - check query syntax and data');
       }
 
       const [row] = result[0].values;
-      return {
-        initial_population_count: row[0] || 0,
-        denominator_count: row[1] || 0,
-        numerator_count: row[2] || 0,
-        percentage_score: row[3] || 0
+      const results = {
+        initial_population_count: Number(row[0]) || 0,
+        denominator_count: Number(row[1]) || 0,
+        numerator_count: Number(row[2]) || 0,
+        percentage_score: Number(row[3]) || 0
       };
+
+      this.addLog('SUCCESS', `Query results: IP=${results.initial_population_count}, DENOM=${results.denominator_count}, NUMER=${results.numerator_count}, Score=${results.percentage_score}%`);
+
+      return results;
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.addLog('ERROR', `SQL execution error: ${errorMessage}`);
+
+      // Try to provide helpful error context
+      if (errorMessage.includes('syntax error')) {
+        this.addLog('ERROR', 'SQL syntax error detected - check generated SQL for issues');
+      } else if (errorMessage.includes('no such table')) {
+        this.addLog('ERROR', 'Table not found - ensure FHIR resources are properly loaded');
+      } else if (errorMessage.includes('no such column')) {
+        this.addLog('ERROR', 'Column not found - check field names in generated SQL');
+      }
+
       throw new Error(`SQL execution failed: ${errorMessage}`);
+    } finally {
+      // Always close the database connection
+      try {
+        db.close();
+      } catch (e) {
+        // Ignore close errors
+      }
     }
   }
 
   private async createInMemoryDatabase(views: any): Promise<SqlDatabase> {
-    // For POC purposes, simulate SQL execution with in-memory JavaScript operations
-    // In a real implementation, this would use sql.js or similar
-    
-    return {
-      exec: (sql: string) => {
-        // Parse the SQL and execute against the views
-        const results = this.simulateSqlExecution(sql, views);
-        
-        return [{
-          columns: ['initial_population_count', 'denominator_count', 'numerator_count', 'percentage_score'],
-          values: [results]
-        }];
-      }
-    };
+    this.addLog('INFO', 'Initializing SQL.js in-memory database');
+
+    // Initialize SQL.js with different configurations for browser vs Node.js
+    const isBrowser = typeof window !== 'undefined';
+    const SQL = await initSqlJs(
+      isBrowser
+        ? {
+            // Browser: Load WASM from CDN
+            locateFile: (file: string) => `https://sql.js.org/dist/${file}`
+          }
+        : {
+            // Node.js: Use local wasm file from node_modules
+            // In production browser, this won't be used
+          }
+    );
+
+    const db = new SQL.Database();
+    this.addLog('SUCCESS', 'SQL.js database initialized');
+
+    try {
+      // Create Patient table
+      db.run(`
+        CREATE TABLE Patient (
+          id TEXT PRIMARY KEY,
+          gender TEXT,
+          birthDate TEXT,
+          age INTEGER
+        )
+      `);
+      this.addLog('INFO', 'Created Patient table');
+
+      // Insert patients
+      views.patients.forEach((p: any) => {
+        db.run(
+          'INSERT INTO Patient (id, gender, birthDate, age) VALUES (?, ?, ?, ?)',
+          [p.id, p.gender || null, p.birthDate || null, p.age || null]
+        );
+      });
+      this.addLog('SUCCESS', `Inserted ${views.patients.length} patients into database`);
+
+      // Create Observation table
+      db.run(`
+        CREATE TABLE Observation (
+          id TEXT PRIMARY KEY,
+          subject_id TEXT,
+          code_text TEXT,
+          effective_datetime TEXT,
+          value_quantity REAL,
+          value_unit TEXT
+        )
+      `);
+      this.addLog('INFO', 'Created Observation table');
+
+      // Insert observations
+      views.observations.forEach((o: any) => {
+        db.run(
+          'INSERT INTO Observation (id, subject_id, code_text, effective_datetime, value_quantity, value_unit) VALUES (?, ?, ?, ?, ?, ?)',
+          [o.id, o.subject_id, o.code_text || null, o.effective_datetime || null,
+           o.value_quantity || null, o.value_unit || null]
+        );
+      });
+      this.addLog('SUCCESS', `Inserted ${views.observations.length} observations into database`);
+
+      // Create Condition table
+      db.run(`
+        CREATE TABLE Condition (
+          id TEXT PRIMARY KEY,
+          subject_id TEXT,
+          code_text TEXT,
+          onset_datetime TEXT,
+          clinical_status TEXT
+        )
+      `);
+      this.addLog('INFO', 'Created Condition table');
+
+      // Insert conditions
+      views.conditions.forEach((c: any) => {
+        db.run(
+          'INSERT INTO Condition (id, subject_id, code_text, onset_datetime, clinical_status) VALUES (?, ?, ?, ?, ?)',
+          [c.id, c.subject_id, c.code_text || null, c.onset_datetime || null, c.clinical_status || null]
+        );
+      });
+      this.addLog('SUCCESS', `Inserted ${views.conditions.length} conditions into database`);
+
+      return {
+        exec: (sql: string) => {
+          this.addLog('INFO', 'Executing SQL query against database');
+          return db.exec(sql);
+        },
+        close: () => {
+          db.close();
+          this.addLog('INFO', 'Closed database connection');
+        }
+      };
+
+    } catch (error) {
+      db.close();
+      throw error;
+    }
   }
 
-  private simulateSqlExecution(sql: string, views: any): number[] {
-    // Simulate SQL execution for POC
-    let initialPop = views.patients.length;
-    let denominator = initialPop;
-    let numerator = 0;
-
-    // Apply gender filter if present
-    if (sql.includes("gender = 'female'")) {
-      initialPop = views.patients.filter((p: any) => p.gender === 'female').length;
-      denominator = initialPop;
-    }
-
-    // Apply age filter if present
-    if (sql.includes('age >= 18')) {
-      const filtered = views.patients.filter((p: any) => (p.age || 0) >= 18);
-      if (sql.includes("gender = 'female'")) {
-        initialPop = filtered.filter((p: any) => p.gender === 'female').length;
-      } else {
-        initialPop = filtered.length;
-      }
-      denominator = initialPop;
-    }
-
-    // Apply observation criteria for numerator
-    if (sql.includes('Heart Rate') && sql.includes('value_quantity > 100')) {
-      const heartRateObs = views.observations.filter((o: any) => 
-        o.code_text?.includes('Heart Rate') && (o.value_quantity || 0) > 100
-      );
-      const qualifyingPatients = new Set(heartRateObs.map((o: any) => o.subject_id));
-      
-      // Count patients in denominator who have qualifying observations
-      let eligiblePatients = views.patients;
-      if (sql.includes("gender = 'female'")) {
-        eligiblePatients = eligiblePatients.filter((p: any) => p.gender === 'female');
-      }
-      if (sql.includes('age >= 18')) {
-        eligiblePatients = eligiblePatients.filter((p: any) => (p.age || 0) >= 18);
-      }
-      
-      numerator = eligiblePatients.filter((p: any) => qualifyingPatients.has(p.id)).length;
-    }
-
-    // Calculate percentage score
-    const percentage = denominator > 0 ? Math.round((numerator / denominator) * 100 * 100) / 100 : 0;
-    this.addLog('INFO', `SQL simulation results: ${numerator}/${denominator} = ${percentage}%`);
-    
-    return [initialPop, denominator, numerator, percentage];
-  }
 
   private generateMeasureReportFromSql(results: { [key: string]: number }): MeasureReport {
     const reportId = `sql-measure-report-${Date.now()}`;
