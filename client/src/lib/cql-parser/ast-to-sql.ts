@@ -248,6 +248,14 @@ DiagnosticReport_view AS (
     // Generate WHERE clause (after JOINs)
     const whereConditions: string[] = [];
 
+    // Add code filter from resource reference (e.g., [Observation: "Heart Rate"])
+    if (query.source.type === 'ResourceReference' && query.source.codeFilter) {
+      const codeFilterCondition = this.generateCodeFilter(query.source.codeFilter, alias);
+      if (codeFilterCondition) {
+        whereConditions.push(codeFilterCondition);
+      }
+    }
+
     // Add relationship conditions
     if (relationshipWhereConditions.length > 0) {
       whereConditions.push(...relationshipWhereConditions);
@@ -270,7 +278,17 @@ DiagnosticReport_view AS (
     const table = `${ref.resourceType}_view`;
     const alias = ref.resourceType[0].toLowerCase();
 
-    return `${indent}SELECT ${alias}.id FROM ${table} ${alias}`;
+    let query = `${indent}SELECT ${alias}.id FROM ${table} ${alias}`;
+
+    // Add code filter if present
+    if (ref.codeFilter) {
+      const codeFilterCondition = this.generateCodeFilter(ref.codeFilter, alias);
+      if (codeFilterCondition) {
+        query += `\n${indent}WHERE ${codeFilterCondition}`;
+      }
+    }
+
+    return query;
   }
 
   private generateRelationship(
@@ -288,13 +306,65 @@ DiagnosticReport_view AS (
     const parentColumn = parentIsIdentifierSource ? 'patient_id' : 'id';
     const join = `${indent}${joinType} ${table} ${alias} ON ${alias}.subject_id = ${parentAlias}.${parentColumn}`;
 
-    // Return condition separately to add to WHERE clause
-    let whereCondition: string | undefined;
-    if (rel.condition) {
-      whereCondition = this.generateExpression(rel.condition);
+    // Collect WHERE conditions
+    const conditions: string[] = [];
+
+    // Add code filter if present (e.g., [Observation: "Heart Rate"])
+    if (rel.source.codeFilter) {
+      const codeFilterCondition = this.generateCodeFilter(rel.source.codeFilter, alias);
+      if (codeFilterCondition) {
+        conditions.push(codeFilterCondition);
+      }
     }
 
+    // Add relationship condition (such that ...)
+    if (rel.condition) {
+      conditions.push(this.generateExpression(rel.condition));
+    }
+
+    // Combine all conditions
+    const whereCondition = conditions.length > 0 ? conditions.join(' AND ') : undefined;
+
     return { join, whereCondition };
+  }
+
+  private generateCodeFilter(codeFilter: CqlExpressionNode, alias: string): string | null {
+    // Handle different types of code filters
+
+    // Case 1: Simple identifier or string literal (e.g., "Heart Rate")
+    if (codeFilter.type === 'Identifier' || codeFilter.type === 'Literal') {
+      const codeValue = codeFilter.type === 'Identifier'
+        ? (codeFilter as IdentifierNode).name
+        : (codeFilter as LiteralNode).value;
+
+      // Use LIKE for partial matching to be more flexible
+      return `${alias}.code_text LIKE '%${codeValue}%'`;
+    }
+
+    // Case 2: Binary expression (e.g., code in "Value Set Name")
+    if (codeFilter.type === 'BinaryExpression') {
+      const expr = codeFilter as BinaryExpressionNode;
+
+      // Handle "in" operator for value set membership
+      if (expr.operator === 'in') {
+        // For now, treat value set as a simple code match
+        // In a real implementation, this would query a value set expansion table
+        const valueSetName = this.generateExpression(expr.right);
+        this.log(`Code filter uses value set: ${valueSetName} (treating as code match for now)`);
+
+        // Simplified: just check if code_text contains the value set name
+        return `${alias}.code_text LIKE '%${valueSetName}%'`;
+      }
+
+      // Other binary operations
+      const left = `${alias}.code_text`;
+      const right = this.generateExpression(expr.right);
+      const operator = this.mapOperatorToSql(expr.operator);
+      return `${left} ${operator} ${right}`;
+    }
+
+    // Fallback: try to generate as expression
+    return this.generateExpression(codeFilter);
   }
 
   private generateWhereCondition(expr: CqlExpressionNode, alias: string): string {
