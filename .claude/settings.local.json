@@ -16,7 +16,8 @@
       "Bash(timeout 10 bash:*)",
       "Bash(npx tsx:*)",
       "Bash(timeout 5 bash:*)",
-      "Bash(npm run build:client:*)"
+      "Bash(npm run build:client:*)",
+      "Bash(set NODE_ENV=development)"
     ],
     "deny": [],
     "ask": []
