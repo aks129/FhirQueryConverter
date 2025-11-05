@@ -58,6 +58,12 @@ export interface Condition extends FhirResource {
       code?: string;
     }>;
   };
+  verificationStatus?: {
+    coding?: Array<{
+      system?: string;
+      code?: string;
+    }>;
+  };
   code: {
     coding?: Array<{
       system?: string;

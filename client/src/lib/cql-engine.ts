@@ -188,9 +188,11 @@ export class CqlEngine {
       if (expression.includes('> 100')) {
         qualifyingPatients = heartRateObs
           .filter(e => e.resource.valueQuantity?.value > 100)
+          .filter(e => e.resource.subject?.reference)
           .map(e => e.resource.subject.reference.replace('Patient/', ''));
       } else {
         qualifyingPatients = heartRateObs
+          .filter(e => e.resource.subject?.reference)
           .map(e => e.resource.subject.reference.replace('Patient/', ''));
       }
     }
