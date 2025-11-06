@@ -31,6 +31,7 @@ import { ExecutionDashboard } from "@/components/execution/ExecutionDashboard";
 import { SqlTranslation } from "@/components/sql/SqlTranslation";
 import { DatabaseConnect } from "@/components/database/DatabaseConnect";
 import { WriteBackPanel } from "@/components/writeback/WriteBackPanel";
+import { ViewManagement } from "@/components/views/ViewManagement";
 import { useAppStore, WorkflowStep } from "@/store/app-store";
 import {
   Server,
@@ -299,56 +300,5 @@ function WriteBackStep() {
 }
 
 function ViewManagementStep() {
-  const { viewDefinitions } = useAppStore();
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Eye className="h-5 w-5" />
-          Manage View Definitions
-        </CardTitle>
-        <CardDescription>
-          Create and manage SQL on FHIR view definitions
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {viewDefinitions.length > 0 ? (
-            <div className="space-y-2">
-              {viewDefinitions.map((view) => (
-                <div
-                  key={view.id}
-                  className="p-3 border rounded-lg flex items-center justify-between"
-                >
-                  <div>
-                    <p className="font-medium">{view.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {view.resource}
-                    </p>
-                  </div>
-                  <Badge variant="outline">{view.status}</Badge>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="p-8 border-2 border-dashed rounded-lg text-center">
-              <Eye className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground mb-4">
-                No view definitions created yet
-              </p>
-              <Button variant="outline">Create View Definition</Button>
-            </div>
-          )}
-
-          <Alert>
-            <CheckCircle2 className="h-4 w-4" />
-            <AlertDescription>
-              Workflow complete! All steps have been configured.
-            </AlertDescription>
-          </Alert>
-        </div>
-      </CardContent>
-    </Card>
-  );
+  return <ViewManagement />;
 }
