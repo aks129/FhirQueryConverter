@@ -132,7 +132,8 @@ export type WorkflowStep =
   | 'sql-translation'
   | 'database-connection'
   | 'writeback'
-  | 'view-management';
+  | 'view-management'
+  | 'comparison';
 
 export interface WorkflowState {
   currentStep: WorkflowStep;

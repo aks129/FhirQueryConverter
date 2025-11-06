@@ -27,6 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAppStore } from '@/store/app-store';
 import { SqlTranspiler } from '@/lib/sql-transpiler';
 import type { FhirBundle } from '@/types/fhir';
+import { useApi } from '@/hooks/use-api';
 
 export function SqlTranslation() {
   const {
@@ -38,6 +39,8 @@ export function SqlTranslation() {
     setSqlMeasureReport,
     markStepComplete,
   } = useAppStore();
+
+  const { saveEvaluationLog, saveMeasureReport } = useApi();
 
   const [isTranspiling, setIsTranspiling] = useState(false);
   const [fhirBundle, setFhirBundle] = useState<FhirBundle | null>(null);
@@ -138,6 +141,35 @@ export function SqlTranslation() {
 
       // Store SQL measure report
       setSqlMeasureReport(measureReport);
+
+      // Save to backend (Phase 8)
+      try {
+        // Save evaluation log
+        await saveEvaluationLog({
+          evaluationType: 'sql',
+          cqlCode: selectedLibrary.content,
+          fhirBundle: fhirBundle,
+          result: result,
+          executionTimeMs: result.executionTime.toString(),
+          memoryUsageMb: null,
+          errors: null,
+        });
+
+        // Save measure report with generated SQL
+        await saveMeasureReport({
+          reportId: measureReport.id || `sql-${Date.now()}`,
+          measureReport: measureReport,
+          evaluationType: 'sql',
+          generatedSql: result.sql,
+        });
+
+        logs.push('Results saved to backend');
+        setExecutionLogs([...logs]);
+      } catch (error) {
+        console.error('Failed to save to backend:', error);
+        logs.push('Warning: Failed to save results to backend');
+        setExecutionLogs([...logs]);
+      }
 
       // Mark step complete
       markStepComplete('sql-translation');

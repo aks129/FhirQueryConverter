@@ -1,7 +1,7 @@
 /**
  * Main Workflow Page
  *
- * Guides users through the complete 8-step FHIR Query Converter workflow:
+ * Guides users through the complete 9-step FHIR Query Converter workflow:
  * 1. Connect to FHIR Server
  * 2. Load CQL Libraries
  * 3. Connect to Terminology Server
@@ -10,6 +10,7 @@
  * 6. Connect to Database
  * 7. Write Back to FHIR Server
  * 8. Manage View Definitions
+ * 9. Compare Results (Phase 8)
  */
 
 import { useState, useEffect } from "react";
@@ -32,6 +33,7 @@ import { SqlTranslation } from "@/components/sql/SqlTranslation";
 import { DatabaseConnect } from "@/components/database/DatabaseConnect";
 import { WriteBackPanel } from "@/components/writeback/WriteBackPanel";
 import { ViewManagement } from "@/components/views/ViewManagement";
+import { ComparisonDashboard } from "@/components/comparison/ComparisonDashboard";
 import { useAppStore, WorkflowStep } from "@/store/app-store";
 import {
   Server,
@@ -44,6 +46,7 @@ import {
   ArrowLeft,
   AlertCircle,
   CheckCircle2,
+  BarChart3,
 } from "lucide-react";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 
@@ -96,6 +99,12 @@ const WORKFLOW_STEPS: Step[] = [
     label: "View Defs",
     description: "Manage views",
     icon: Eye,
+  },
+  {
+    id: "comparison",
+    label: "Compare Results",
+    description: "CQL vs SQL",
+    icon: BarChart3,
   },
 ];
 
@@ -178,6 +187,8 @@ export default function Workflow() {
         return <WriteBackStep />;
       case "view-management":
         return <ViewManagementStep />;
+      case "comparison":
+        return <ComparisonStep />;
       default:
         return null;
     }
@@ -203,7 +214,7 @@ export default function Workflow() {
                 </p>
               </div>
             </div>
-            <Badge variant="outline">Phase 7 - Alpha v0.2</Badge>
+            <Badge variant="outline">Phase 8 - Alpha v0.3</Badge>
           </div>
         </div>
       </header>
@@ -301,4 +312,8 @@ function WriteBackStep() {
 
 function ViewManagementStep() {
   return <ViewManagement />;
+}
+
+function ComparisonStep() {
+  return <ComparisonDashboard />;
 }

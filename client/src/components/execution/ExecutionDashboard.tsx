@@ -29,6 +29,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAppStore } from '@/store/app-store';
 import { CqlEngine } from '@/lib/cql-engine';
 import type { FhirBundle } from '@/types/fhir';
+import { useApi } from '@/hooks/use-api';
 
 export function ExecutionDashboard() {
   const {
@@ -40,6 +41,8 @@ export function ExecutionDashboard() {
     setCqlMeasureReport,
     markStepComplete,
   } = useAppStore();
+
+  const { saveEvaluationLog, saveMeasureReport } = useApi();
 
   const [isLoadingPatients, setIsLoadingPatients] = useState(false);
   const [isExecuting, setIsExecuting] = useState(false);
@@ -223,6 +226,35 @@ export function ExecutionDashboard() {
 
       // Store in Zustand
       setCqlMeasureReport(measureReport);
+
+      // Save to backend (Phase 8)
+      try {
+        // Save evaluation log
+        await saveEvaluationLog({
+          evaluationType: 'cql',
+          cqlCode: selectedLibrary.content,
+          fhirBundle: fhirBundle,
+          result: result,
+          executionTimeMs: result.executionTime.toString(),
+          memoryUsageMb: result.memoryUsage?.toString(),
+          errors: null,
+        });
+
+        // Save measure report
+        await saveMeasureReport({
+          reportId: measureReport.id || `cql-${Date.now()}`,
+          measureReport: measureReport,
+          evaluationType: 'cql',
+          generatedSql: null,
+        });
+
+        logs.push('Results saved to backend');
+        setExecutionLogs([...logs]);
+      } catch (error) {
+        console.error('Failed to save to backend:', error);
+        logs.push('Warning: Failed to save results to backend');
+        setExecutionLogs([...logs]);
+      }
 
       // Mark step complete
       markStepComplete('execution');
