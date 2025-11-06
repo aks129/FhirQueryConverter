@@ -30,6 +30,7 @@ import { TerminologyConnect } from "@/components/terminology/TerminologyConnect"
 import { ExecutionDashboard } from "@/components/execution/ExecutionDashboard";
 import { SqlTranslation } from "@/components/sql/SqlTranslation";
 import { DatabaseConnect } from "@/components/database/DatabaseConnect";
+import { WriteBackPanel } from "@/components/writeback/WriteBackPanel";
 import { useAppStore, WorkflowStep } from "@/store/app-store";
 import {
   Server,
@@ -294,27 +295,7 @@ function DatabaseConnectionStep() {
 }
 
 function WriteBackStep() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <CloudUpload className="h-5 w-5" />
-          Write Back to FHIR Server
-        </CardTitle>
-        <CardDescription>
-          Post measure reports and view definitions back to FHIR server
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="p-8 border-2 border-dashed rounded-lg text-center">
-          <CloudUpload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">
-            Write-back interface will appear here
-          </p>
-        </div>
-      </CardContent>
-    </Card>
-  );
+  return <WriteBackPanel />;
 }
 
 function ViewManagementStep() {
