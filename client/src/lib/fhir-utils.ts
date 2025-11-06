@@ -190,86 +190,98 @@ export function flattenBundleToViews(bundle: FhirBundle): {
 
       case 'Observation':
         const obs = resource as Observation;
-        observations.push({
-          id: obs.id,
-          subject_id: obs.subject.reference.replace('Patient/', ''),
-          code: obs.code.coding?.[0]?.code,
-          code_system: obs.code.coding?.[0]?.system,
-          code_text: obs.code.text || obs.code.coding?.[0]?.display,
-          effective_datetime: obs.effectiveDateTime,
-          value_quantity: obs.valueQuantity?.value,
-          value_unit: obs.valueQuantity?.unit,
-          status: obs.status
-        });
+        if (obs.subject?.reference) {
+          observations.push({
+            id: obs.id,
+            subject_id: obs.subject.reference.replace('Patient/', ''),
+            code: obs.code.coding?.[0]?.code,
+            code_system: obs.code.coding?.[0]?.system,
+            code_text: obs.code.text || obs.code.coding?.[0]?.display,
+            effective_datetime: obs.effectiveDateTime,
+            value_quantity: obs.valueQuantity?.value,
+            value_unit: obs.valueQuantity?.unit,
+            status: obs.status
+          });
+        }
         break;
 
       case 'Condition':
         const condition = resource as Condition;
-        conditions.push({
-          id: condition.id,
-          subject_id: condition.subject.reference.replace('Patient/', ''),
-          code: condition.code.coding?.[0]?.code,
-          code_system: condition.code.coding?.[0]?.system,
-          code_text: condition.code.text || condition.code.coding?.[0]?.display,
-          onset_datetime: condition.onsetDateTime,
-          clinical_status: condition.clinicalStatus?.coding?.[0]?.code,
-          verification_status: condition.verificationStatus?.coding?.[0]?.code
-        });
+        if (condition.subject?.reference) {
+          conditions.push({
+            id: condition.id,
+            subject_id: condition.subject.reference.replace('Patient/', ''),
+            code: condition.code.coding?.[0]?.code,
+            code_system: condition.code.coding?.[0]?.system,
+            code_text: condition.code.text || condition.code.coding?.[0]?.display,
+            onset_datetime: condition.onsetDateTime,
+            clinical_status: condition.clinicalStatus?.coding?.[0]?.code,
+            verification_status: condition.verificationStatus?.coding?.[0]?.code
+          });
+        }
         break;
 
       case 'Procedure':
         const procedure = resource as Procedure;
-        procedures.push({
-          id: procedure.id,
-          subject_id: procedure.subject.reference.replace('Patient/', ''),
-          code: procedure.code.coding?.[0]?.code,
-          code_system: procedure.code.coding?.[0]?.system,
-          code_text: procedure.code.text || procedure.code.coding?.[0]?.display,
-          performed_datetime: procedure.performedDateTime || procedure.performedPeriod?.start,
-          status: procedure.status
-        });
+        if (procedure.subject?.reference) {
+          procedures.push({
+            id: procedure.id,
+            subject_id: procedure.subject.reference.replace('Patient/', ''),
+            code: procedure.code.coding?.[0]?.code,
+            code_system: procedure.code.coding?.[0]?.system,
+            code_text: procedure.code.text || procedure.code.coding?.[0]?.display,
+            performed_datetime: procedure.performedDateTime || procedure.performedPeriod?.start,
+            status: procedure.status
+          });
+        }
         break;
 
       case 'MedicationRequest':
         const medReq = resource as MedicationRequest;
-        medicationRequests.push({
-          id: medReq.id,
-          subject_id: medReq.subject.reference.replace('Patient/', ''),
-          medication_code: medReq.medicationCodeableConcept?.coding?.[0]?.code,
-          medication_system: medReq.medicationCodeableConcept?.coding?.[0]?.system,
-          medication_text: medReq.medicationCodeableConcept?.text ||
-                          medReq.medicationCodeableConcept?.coding?.[0]?.display,
-          authored_on: medReq.authoredOn,
-          status: medReq.status,
-          intent: medReq.intent
-        });
+        if (medReq.subject?.reference) {
+          medicationRequests.push({
+            id: medReq.id,
+            subject_id: medReq.subject.reference.replace('Patient/', ''),
+            medication_code: medReq.medicationCodeableConcept?.coding?.[0]?.code,
+            medication_system: medReq.medicationCodeableConcept?.coding?.[0]?.system,
+            medication_text: medReq.medicationCodeableConcept?.text ||
+                            medReq.medicationCodeableConcept?.coding?.[0]?.display,
+            authored_on: medReq.authoredOn,
+            status: medReq.status,
+            intent: medReq.intent
+          });
+        }
         break;
 
       case 'Encounter':
         const encounter = resource as Encounter;
-        encounters.push({
-          id: encounter.id,
-          subject_id: encounter.subject.reference.replace('Patient/', ''),
-          class_code: encounter.class.code,
-          type_text: encounter.type?.[0]?.text || encounter.type?.[0]?.coding?.[0]?.display,
-          period_start: encounter.period?.start,
-          period_end: encounter.period?.end,
-          status: encounter.status
-        });
+        if (encounter.subject?.reference) {
+          encounters.push({
+            id: encounter.id,
+            subject_id: encounter.subject.reference.replace('Patient/', ''),
+            class_code: encounter.class.code,
+            type_text: encounter.type?.[0]?.text || encounter.type?.[0]?.coding?.[0]?.display,
+            period_start: encounter.period?.start,
+            period_end: encounter.period?.end,
+            status: encounter.status
+          });
+        }
         break;
 
       case 'DiagnosticReport':
         const report = resource as DiagnosticReport;
-        diagnosticReports.push({
-          id: report.id,
-          subject_id: report.subject.reference.replace('Patient/', ''),
-          code: report.code.coding?.[0]?.code,
-          code_system: report.code.coding?.[0]?.system,
-          code_text: report.code.text || report.code.coding?.[0]?.display,
-          effective_datetime: report.effectiveDateTime || report.effectivePeriod?.start,
-          issued: report.issued,
-          status: report.status
-        });
+        if (report.subject?.reference) {
+          diagnosticReports.push({
+            id: report.id,
+            subject_id: report.subject.reference.replace('Patient/', ''),
+            code: report.code.coding?.[0]?.code,
+            code_system: report.code.coding?.[0]?.system,
+            code_text: report.code.text || report.code.coding?.[0]?.display,
+            effective_datetime: report.effectiveDateTime || report.effectivePeriod?.start,
+            issued: report.issued,
+            status: report.status
+          });
+        }
         break;
     }
   });
