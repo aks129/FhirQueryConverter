@@ -26,6 +26,7 @@ import {
 } from "@/components/wizard/StepperNav";
 import { FhirServerConnect } from "@/components/connections/FhirServerConnect";
 import { LibraryManager } from "@/components/library/LibraryManager";
+import { TerminologyConnect } from "@/components/terminology/TerminologyConnect";
 import { useAppStore, WorkflowStep } from "@/store/app-store";
 import {
   Server,
@@ -274,27 +275,7 @@ function LibraryLoadingStep() {
 }
 
 function TerminologyConnectionStep() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <BookOpen className="h-5 w-5" />
-          Connect to Terminology Server
-        </CardTitle>
-        <CardDescription>
-          Connect to TX.FHIR.ORG for value set expansion
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="p-8 border-2 border-dashed rounded-lg text-center">
-          <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">
-            Terminology connection will appear here
-          </p>
-        </div>
-      </CardContent>
-    </Card>
-  );
+  return <TerminologyConnect />;
 }
 
 function ExecutionStep() {
