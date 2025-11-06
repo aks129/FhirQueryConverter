@@ -25,6 +25,7 @@ import {
   type Step,
 } from "@/components/wizard/StepperNav";
 import { FhirServerConnect } from "@/components/connections/FhirServerConnect";
+import { LibraryManager } from "@/components/library/LibraryManager";
 import { useAppStore, WorkflowStep } from "@/store/app-store";
 import {
   Server,
@@ -269,27 +270,7 @@ function FhirConnectionStep() {
 }
 
 function LibraryLoadingStep() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <FileCode className="h-5 w-5" />
-          Load CQL Libraries
-        </CardTitle>
-        <CardDescription>
-          Browse and load CQL libraries from the FHIR server or upload local files
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="p-8 border-2 border-dashed rounded-lg text-center">
-          <FileCode className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">
-            Library manager will appear here
-          </p>
-        </div>
-      </CardContent>
-    </Card>
-  );
+  return <LibraryManager />;
 }
 
 function TerminologyConnectionStep() {
