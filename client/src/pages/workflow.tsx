@@ -27,6 +27,7 @@ import {
 import { FhirServerConnect } from "@/components/connections/FhirServerConnect";
 import { LibraryManager } from "@/components/library/LibraryManager";
 import { TerminologyConnect } from "@/components/terminology/TerminologyConnect";
+import { ExecutionDashboard } from "@/components/execution/ExecutionDashboard";
 import { useAppStore, WorkflowStep } from "@/store/app-store";
 import {
   Server,
@@ -279,27 +280,7 @@ function TerminologyConnectionStep() {
 }
 
 function ExecutionStep() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Play className="h-5 w-5" />
-          Execute CQL & Generate Measure Reports
-        </CardTitle>
-        <CardDescription>
-          Run CQL queries against FHIR data and generate measure reports
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="p-8 border-2 border-dashed rounded-lg text-center">
-          <Play className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">
-            Execution dashboard will appear here
-          </p>
-        </div>
-      </CardContent>
-    </Card>
-  );
+  return <ExecutionDashboard />;
 }
 
 function SqlTranslationStep() {
