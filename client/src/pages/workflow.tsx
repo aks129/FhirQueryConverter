@@ -29,6 +29,7 @@ import { LibraryManager } from "@/components/library/LibraryManager";
 import { TerminologyConnect } from "@/components/terminology/TerminologyConnect";
 import { ExecutionDashboard } from "@/components/execution/ExecutionDashboard";
 import { SqlTranslation } from "@/components/sql/SqlTranslation";
+import { DatabaseConnect } from "@/components/database/DatabaseConnect";
 import { useAppStore, WorkflowStep } from "@/store/app-store";
 import {
   Server,
@@ -289,27 +290,7 @@ function SqlTranslationStep() {
 }
 
 function DatabaseConnectionStep() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Database className="h-5 w-5" />
-          Connect to Database
-        </CardTitle>
-        <CardDescription>
-          Connect to DuckDB or Databricks for SQL execution
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="p-8 border-2 border-dashed rounded-lg text-center">
-          <Database className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">
-            Database connection form will appear here
-          </p>
-        </div>
-      </CardContent>
-    </Card>
-  );
+  return <DatabaseConnect />;
 }
 
 function WriteBackStep() {
