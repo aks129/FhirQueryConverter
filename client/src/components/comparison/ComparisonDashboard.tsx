@@ -60,9 +60,9 @@ export function ComparisonDashboard() {
   const [error, setError] = useState<string | null>(null);
 
   // Get data from store for real-time updates
-  const cqlMeasureReport = useAppStore((state) => state.execution.measureReport);
-  const sqlMeasureReport = useAppStore((state) => state.sqlTranslation.measureReport);
-  const generatedSql = useAppStore((state) => state.sqlTranslation.generatedSql);
+  const cqlMeasureReport = useAppStore((state) => state.cqlMeasureReport);
+  const sqlMeasureReport = useAppStore((state) => state.sqlMeasureReport);
+  const generatedSql = useAppStore((state) => state.generatedSql);
 
   // Fetch comparison data from backend
   const fetchComparisonData = async () => {

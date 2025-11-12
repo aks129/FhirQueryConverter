@@ -160,7 +160,7 @@ export function SqlTranslation() {
           reportId: measureReport.id || `sql-${Date.now()}`,
           measureReport: measureReport,
           evaluationType: 'sql',
-          generatedSql: result.sql,
+          generatedSql: result.generatedSql,
         });
 
         logs.push('Results saved to backend');
