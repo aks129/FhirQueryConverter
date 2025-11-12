@@ -7,7 +7,7 @@ import { useCqlEvaluation } from "@/hooks/use-cql-evaluation";
 import { useSqlEvaluation } from "@/hooks/use-sql-evaluation";
 import { FhirBundle } from "@/types/fhir";
 import { sampleCqlCode, diabetesCareBundle } from "@/lib/sample-data";
-import { Play, ServerCog, Stethoscope, Zap, HelpCircle } from "lucide-react";
+import { Play, ServerCog, Stethoscope, Zap, HelpCircle, Bot } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 
@@ -148,6 +148,17 @@ export default function Home() {
                 >
                   <Zap className="w-4 h-4" />
                   See Real Demo
+                </Button>
+              </Link>
+              <Link href="/ai">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2 border-purple-600 text-purple-600 hover:bg-purple-50"
+                  data-testid="button-ai"
+                >
+                  <Bot className="w-4 h-4" />
+                  AI Agents
                 </Button>
               </Link>
               <Link href="/faq">
