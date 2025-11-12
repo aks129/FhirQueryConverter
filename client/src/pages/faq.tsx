@@ -25,17 +25,18 @@ export default function FAQ() {
       <div className="text-center mb-8">
         <div className="flex items-center justify-center gap-2 mb-4">
           <h1 className="text-3xl font-bold">FHIR Query Converter</h1>
-          <Badge variant="secondary">Alpha v0.1</Badge>
+          <Badge variant="secondary">Alpha v0.3</Badge>
         </div>
         <p className="text-lg text-muted-foreground mb-4">
-          HL7-Compliant CQL to SQL on FHIR Transpiler with ELM Integration
+          Production-Ready CQL to SQL on FHIR Platform with Complete 9-Step Workflow
         </p>
         <div className="flex items-center justify-center gap-4 text-sm">
           <Badge variant="outline" className="flex items-center gap-1">
-            <CheckCircle2 className="w-3 h-3" />
-            Phase 6 Complete
+            <CheckCircle2 className="w-3 h-3 text-green-600" />
+            Phase 7 & 8 Complete
           </Badge>
-          <Badge variant="outline">6/8 Tracks Implemented</Badge>
+          <Badge variant="outline" className="bg-green-50">9-Step Workflow Live</Badge>
+          <Badge variant="outline">Backend + Analytics</Badge>
         </div>
       </div>
 
@@ -807,7 +808,7 @@ SELECT DISTINCT patient_id FROM Numerator;`}
           <AccordionTrigger className="text-left">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5" />
-              What CQL features are currently supported in Alpha v0.1?
+              What CQL features are currently supported in Alpha v0.3?
             </div>
           </AccordionTrigger>
           <AccordionContent>
@@ -886,81 +887,119 @@ SELECT DISTINCT patient_id FROM Numerator;`}
               <CardContent className="pt-6">
                 <div className="space-y-4">
                   <div>
-                    <h4 className="font-semibold mb-2">Roadmap: Alpha v0.1 → Production</h4>
+                    <h4 className="font-semibold mb-2">Current Status: Alpha v0.3</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Phase 7 & 8 complete with production-ready 9-step workflow, backend persistence,
+                      and analytics dashboard. Ready for expanded CQL support and production hardening.
+                    </p>
                   </div>
 
                   <div className="space-y-4">
                     <div>
                       <div className="flex items-center gap-2 mb-2">
-                        <Badge className="bg-yellow-600">Phase 7</Badge>
-                        <h5 className="font-medium">Comprehensive Testing</h5>
+                        <Badge className="bg-green-600">Phase 7</Badge>
+                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                        <h5 className="font-medium">Production Workflow UX - COMPLETE</h5>
+                      </div>
+                      <ul className="text-sm space-y-1 ml-6 list-disc text-muted-foreground">
+                        <li>✅ FHIR Server Connection (Medplum OAuth2)</li>
+                        <li>✅ Library Manager (Browse/upload CQL from FHIR)</li>
+                        <li>✅ Terminology Server (TX.FHIR.ORG integration)</li>
+                        <li>✅ Execution Dashboard (Run CQL queries)</li>
+                        <li>✅ SQL Translation & Comparison (Side-by-side)</li>
+                        <li>✅ Database Connection (DuckDB WASM + Databricks)</li>
+                        <li>✅ Write-Back (Post MeasureReports to FHIR)</li>
+                        <li>✅ View Management (SQL on FHIR ViewDefinitions)</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge className="bg-green-600">Phase 8</Badge>
+                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                        <h5 className="font-medium">Backend Persistence & Analytics - COMPLETE</h5>
+                      </div>
+                      <ul className="text-sm space-y-1 ml-6 list-disc text-muted-foreground">
+                        <li>✅ PostgreSQL database integration (Drizzle ORM)</li>
+                        <li>✅ Evaluation logging (track all executions)</li>
+                        <li>✅ MeasureReport storage</li>
+                        <li>✅ REST API endpoints</li>
+                        <li>✅ Analytics Dashboard (Step 9 - execution trends)</li>
+                        <li>✅ Performance metrics & comparisons</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge className="bg-yellow-600">Phase 9</Badge>
+                        <AlertCircle className="w-4 h-4 text-yellow-600" />
+                        <h5 className="font-medium">Enhanced Testing & Quality - NEXT</h5>
                       </div>
                       <ul className="text-sm space-y-1 ml-6 list-disc">
-                        <li>Unit tests for all components (value sets, naming, ELM, SQL generation)</li>
-                        <li>Integration tests for end-to-end pipeline</li>
-                        <li>Sample CQL libraries (diabetes, hypertension, quality measures)</li>
-                        <li>SQL execution validation against test databases</li>
+                        <li><strong>Unit Testing:</strong> Vitest for CQL engine, SQL transpiler, FHIR utils</li>
+                        <li><strong>Integration Testing:</strong> API endpoints, FHIR operations, DB operations</li>
+                        <li><strong>E2E Testing:</strong> Playwright for complete workflow (Steps 1-9)</li>
+                        <li>80%+ code coverage target</li>
+                        <li>Performance benchmarks</li>
                         <li>Regression test suite</li>
                       </ul>
                     </div>
 
                     <div>
                       <div className="flex items-center gap-2 mb-2">
-                        <Badge className="bg-yellow-600">Phase 8</Badge>
-                        <h5 className="font-medium">Performance Optimizations</h5>
+                        <Badge className="bg-yellow-600">Phase 9 Alt</Badge>
+                        <h5 className="font-medium">Expanded CQL Support</h5>
                       </div>
                       <ul className="text-sm space-y-1 ml-6 list-disc">
-                        <li>Value set caching in memory</li>
-                        <li>SQL query optimization (index hints, query plans)</li>
-                        <li>ELM tree optimization (common subexpression elimination)</li>
-                        <li>Lazy evaluation for large datasets</li>
-                        <li>Streaming processing for FHIR bundles</li>
+                        <li><strong>Date/Time:</strong> DateFrom, TimeFrom, Duration, Difference</li>
+                        <li><strong>String:</strong> Substring, Concatenate, IndexOf, Split</li>
+                        <li><strong>Math:</strong> Abs, Ceiling, Floor, Ln, Log, Power</li>
+                        <li><strong>List:</strong> Flatten, Distinct, Except, Intersect, Union</li>
+                        <li><strong>Advanced:</strong> Intervals, Code/Concept operations</li>
+                        <li>Better SQL translation for complex patterns</li>
                       </ul>
                     </div>
 
                     <div>
                       <div className="flex items-center gap-2 mb-2">
-                        <Badge className="bg-blue-600">Phase 9</Badge>
-                        <h5 className="font-medium">Full CQL Grammar Support</h5>
+                        <Badge className="bg-blue-600">Phase 10</Badge>
+                        <h5 className="font-medium">Production Hardening</h5>
                       </div>
                       <ul className="text-sm space-y-1 ml-6 list-disc">
-                        <li>Complete CQL parser (ANTLR-based)</li>
-                        <li>Full standard library functions</li>
-                        <li>Library includes and dependencies</li>
-                        <li>Parameter support</li>
-                        <li>Tuple and List operations</li>
-                        <li>Advanced temporal logic</li>
+                        <li><strong>Authentication:</strong> Token refresh, SSO, RBAC</li>
+                        <li><strong>Error Handling:</strong> Boundaries, retry logic, fallbacks</li>
+                        <li><strong>Performance:</strong> Code splitting, lazy loading, caching</li>
+                        <li><strong>Security:</strong> Input validation, XSS/SQL injection prevention</li>
+                        <li>Rate limiting and monitoring</li>
                       </ul>
                     </div>
 
                     <div>
                       <div className="flex items-center gap-2 mb-2">
-                        <Badge className="bg-purple-600">Phase 10</Badge>
-                        <h5 className="font-medium">Multi-Target Code Generation</h5>
+                        <Badge className="bg-purple-600">Phase 11</Badge>
+                        <h5 className="font-medium">Advanced Features</h5>
                       </div>
                       <ul className="text-sm space-y-1 ml-6 list-disc">
-                        <li><strong>JavaScript/TypeScript:</strong> Client-side evaluation</li>
-                        <li><strong>C#:</strong> .NET ecosystem integration (Firely SDK pattern)</li>
-                        <li><strong>Python:</strong> Data science workflows</li>
-                        <li><strong>R:</strong> Statistical analysis</li>
-                        <li>Target language optimization per platform</li>
+                        <li><strong>Collaboration:</strong> User management, shared libraries, team workflows</li>
+                        <li><strong>Analytics:</strong> Custom reports, export (PDF/CSV), scheduled evaluations</li>
+                        <li><strong>CQL Editor:</strong> Syntax highlighting, auto-complete, validation</li>
+                        <li><strong>Databricks:</strong> Complete integration with connection pooling</li>
+                        <li>Multi-database support (PostgreSQL, MySQL, SQL Server)</li>
                       </ul>
                     </div>
 
                     <div>
                       <div className="flex items-center gap-2 mb-2">
-                        <Badge className="bg-green-600">Phase 11</Badge>
-                        <h5 className="font-medium">Production Features</h5>
+                        <Badge className="bg-purple-600">Phase 12</Badge>
+                        <h5 className="font-medium">Enterprise Features</h5>
                       </div>
                       <ul className="text-sm space-y-1 ml-6 list-disc">
-                        <li>Real SQL database integration (PostgreSQL, MySQL, SQL Server)</li>
-                        <li>FHIR server integration (HAPI FHIR, Microsoft FHIR Server)</li>
-                        <li>Terminology server integration (TX.FHIR.ORG, Ontoserver)</li>
-                        <li>Complete FHIR R4 resource coverage</li>
-                        <li>CQL editor with syntax highlighting and validation</li>
-                        <li>Value set browser and management UI</li>
-                        <li>Query optimizer with suggestions</li>
-                        <li>ELM debugger and step-through execution</li>
+                        <li>HAPI FHIR & Microsoft FHIR Server integration</li>
+                        <li>Multiple terminology servers (Ontoserver support)</li>
+                        <li>Complete FHIR R4/R5 resource coverage</li>
+                        <li>ELM debugger with step-through execution</li>
+                        <li>Query optimizer with AI-powered suggestions</li>
+                        <li>Library versioning and dependency management</li>
                       </ul>
                     </div>
                   </div>
