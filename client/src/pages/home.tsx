@@ -139,10 +139,21 @@ export default function Home() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              <Link href="/demo">
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                  data-testid="button-demo"
+                >
+                  <Zap className="w-4 h-4" />
+                  See Real Demo
+                </Button>
+              </Link>
               <Link href="/faq">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="flex items-center gap-2"
                   data-testid="button-faq"
                 >
