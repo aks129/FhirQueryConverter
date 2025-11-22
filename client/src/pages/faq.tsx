@@ -1227,13 +1227,32 @@ SELECT DISTINCT patient_id FROM Numerator;`}
         </AccordionItem>
       </Accordion>
 
-      <div className="mt-8 text-center">
-        <Link href="/">
-          <Button size="lg" className="gap-2">
-            <ArrowLeft className="w-4 h-4" />
-            Try the Converter
-          </Button>
-        </Link>
+      <div className="mt-8 space-y-4">
+        <Card className="border-blue-200 bg-blue-50">
+          <CardContent className="pt-6">
+            <h4 className="font-semibold mb-2 flex items-center gap-2">
+              <Code className="w-4 h-4" />
+              CQL Functions Reference
+            </h4>
+            <p className="text-sm text-muted-foreground mb-3">
+              Learn about CQL functions and how they translate to ANSI SQL in our comprehensive reference guide.
+            </p>
+            <Link href="/cql-functions">
+              <Button size="sm" variant="outline">
+                View CQL Functions Guide
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+
+        <div className="text-center">
+          <Link href="/">
+            <Button size="lg" className="gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              Try the Converter
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
   );

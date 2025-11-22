@@ -7,6 +7,7 @@ import Home from "@/pages/home";
 import FAQ from "@/pages/faq";
 import Demo from "@/pages/demo";
 import AI from "@/pages/ai";
+import CQLFunctions from "@/pages/cql-functions";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -16,6 +17,7 @@ function Router() {
       <Route path="/faq" component={FAQ} />
       <Route path="/demo" component={Demo} />
       <Route path="/ai" component={AI} />
+      <Route path="/cql-functions" component={CQLFunctions} />
       <Route component={NotFound} />
     </Switch>
   );
