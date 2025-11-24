@@ -50,8 +50,6 @@ interface E2EConfig {
   };
   vsac: {
     apiKey: string;
-    username: string;
-    password: string;
     valueSetOids: string[];
   };
   databricks: {
@@ -79,8 +77,6 @@ const DEFAULT_CONFIG: E2EConfig = {
   },
   vsac: {
     apiKey: "",
-    username: "",
-    password: "",
     valueSetOids: [
       "2.16.840.1.113883.3.464.1003.198.12.1011", // Mammography
       "2.16.840.1.113883.3.526.3.1285", // Bilateral Mastectomy
@@ -120,7 +116,7 @@ export default function E2EConfig() {
   });
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({
     medplumSecret: false,
-    vsacPassword: false,
+    vsacApiKey: false,
     databricksToken: false
   });
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
@@ -179,8 +175,11 @@ export default function E2EConfig() {
       await new Promise(resolve => setTimeout(resolve, 2000));
 
       // In real implementation:
-      // const response = await fetch("https://vsac.nlm.nih.gov/vsac/ws/...", {
-      //   headers: { Authorization: `Basic ${btoa(`${config.vsac.username}:${config.vsac.password}`)}` }
+      // const response = await fetch("https://vsac.nlm.nih.gov/vsac/svs/valueset/2.16.840.1.113883.3.464.1003.198.12.1011/expansion", {
+      //   headers: {
+      //     "Authorization": `Bearer ${config.vsac.apiKey}`,
+      //     "Accept": "application/json"
+      //   }
       // });
 
       setTestResults({ ...testResults, vsac: true });
@@ -490,59 +489,42 @@ export default function E2EConfig() {
                 NLM Value Set Authority Center (VSAC)
               </CardTitle>
               <CardDescription>
-                Configure UMLS Terminology Services credentials for ValueSet expansion
+                Configure NLM VSAC API key for ValueSet expansion
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Alert>
                 <AlertCircle className="h-4 w-4" />
-                <AlertTitle>UMLS License Required</AlertTitle>
+                <AlertTitle>NLM VSAC API Key Required</AlertTitle>
                 <AlertDescription>
-                  You need a UMLS Terminology Services (UTS) account to access VSAC.
-                  Register for free at <a href="https://uts.nlm.nih.gov/uts/" className="text-blue-600 underline" target="_blank" rel="noopener noreferrer">uts.nlm.nih.gov</a>
+                  You need an API key from the National Library of Medicine Value Set Authority Center.
+                  Register for free at <a href="https://uts.nlm.nih.gov/uts/" className="text-blue-600 underline" target="_blank" rel="noopener noreferrer">uts.nlm.nih.gov</a> and generate an API key.
                 </AlertDescription>
               </Alert>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-4">
                 <div>
-                  <Label htmlFor="vsac-username">UMLS Username</Label>
-                  <Input
-                    id="vsac-username"
-                    value={config.vsac.username}
-                    onChange={(e) => updateConfig("vsac", "username", e.target.value)}
-                    placeholder="Your UMLS username"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="vsac-password">UMLS Password</Label>
+                  <Label htmlFor="vsac-apikey">VSAC API Key</Label>
                   <div className="flex gap-2">
                     <Input
-                      id="vsac-password"
-                      type={showSecrets.vsacPassword ? "text" : "password"}
-                      value={config.vsac.password}
-                      onChange={(e) => updateConfig("vsac", "password", e.target.value)}
-                      placeholder="Your UMLS password"
+                      id="vsac-apikey"
+                      type={showSecrets.vsacApiKey ? "text" : "password"}
+                      value={config.vsac.apiKey}
+                      onChange={(e) => updateConfig("vsac", "apiKey", e.target.value)}
+                      placeholder="Enter your VSAC API key"
                       className="flex-1"
                     />
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => setShowSecrets({ ...showSecrets, vsacPassword: !showSecrets.vsacPassword })}
+                      onClick={() => setShowSecrets({ ...showSecrets, vsacApiKey: !showSecrets.vsacApiKey })}
                     >
-                      {showSecrets.vsacPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showSecrets.vsacApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </Button>
                   </div>
-                </div>
-
-                <div className="col-span-2">
-                  <Label htmlFor="vsac-apikey">API Key (Optional)</Label>
-                  <Input
-                    id="vsac-apikey"
-                    value={config.vsac.apiKey}
-                    onChange={(e) => updateConfig("vsac", "apiKey", e.target.value)}
-                    placeholder="Optional API key for higher rate limits"
-                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Generate your API key at: UTS Profile → API Key Management
+                  </p>
                 </div>
               </div>
 
@@ -581,7 +563,7 @@ export default function E2EConfig() {
               <div className="flex gap-2">
                 <Button
                   onClick={testVSAC}
-                  disabled={!config.vsac.username || !config.vsac.password || testing.vsac}
+                  disabled={!config.vsac.apiKey || testing.vsac}
                   className="flex items-center gap-2"
                 >
                   {testing.vsac ? (

@@ -147,8 +147,6 @@ export default function E2EDemo() {
 
   const [vsacConfig, setVsacConfig] = useState({
     apiKey: "",
-    username: "",
-    password: "",
     valueSetOids: []
   });
 
@@ -331,10 +329,10 @@ export default function E2EDemo() {
 
     try {
       await new Promise(resolve => setTimeout(resolve, 1200));
-      addLog(3, "Authenticating with UMLS credentials...");
+      addLog(3, "Authenticating with VSAC API key...");
 
       await new Promise(resolve => setTimeout(resolve, 1000));
-      addLog(3, "✓ VSAC authentication successful", "success");
+      addLog(3, "✓ VSAC API authentication successful", "success");
 
       addLog(3, "Retrieving required ValueSets for CMS125...");
       const valueSets = [
@@ -897,30 +895,21 @@ SELECT 'numerator', COUNT(DISTINCT patient_id) FROM numerator;`;
           <div className="space-y-4">
             <Alert>
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle>UMLS License Required</AlertTitle>
+              <AlertTitle>NLM VSAC API Key Required</AlertTitle>
               <AlertDescription>
-                Access to NLM VSAC requires a valid UMLS Terminology Services (UTS) account.
-                Register at <a href="https://uts.nlm.nih.gov/uts/" className="text-blue-600 underline" target="_blank" rel="noopener noreferrer">uts.nlm.nih.gov</a>
+                Access to NLM VSAC requires an API key from UMLS Terminology Services.
+                Register at <a href="https://uts.nlm.nih.gov/uts/" className="text-blue-600 underline" target="_blank" rel="noopener noreferrer">uts.nlm.nih.gov</a> and generate an API key.
               </AlertDescription>
             </Alert>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-4">
               <div>
-                <Label htmlFor="vsac-username">VSAC Username</Label>
+                <Label htmlFor="vsac-apikey">VSAC API Key</Label>
                 <Input
-                  id="vsac-username"
-                  value={vsacConfig.username}
-                  onChange={(e) => setVsacConfig({ ...vsacConfig, username: e.target.value })}
-                  placeholder="UTS username"
-                />
-              </div>
-              <div>
-                <Label htmlFor="vsac-password">VSAC Password</Label>
-                <Input
-                  id="vsac-password"
+                  id="vsac-apikey"
                   type="password"
-                  value={vsacConfig.password}
-                  onChange={(e) => setVsacConfig({ ...vsacConfig, password: e.target.value })}
-                  placeholder="UTS password"
+                  value={vsacConfig.apiKey}
+                  onChange={(e) => setVsacConfig({ ...vsacConfig, apiKey: e.target.value })}
+                  placeholder="Enter your VSAC API key"
                 />
               </div>
             </div>
