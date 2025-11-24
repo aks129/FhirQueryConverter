@@ -139,15 +139,26 @@ export default function Home() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <Link href="/demo">
+              <Link href="/e2e-demo">
                 <Button
                   variant="default"
                   size="sm"
-                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+                  data-testid="button-e2e"
+                >
+                  <Zap className="w-4 h-4" />
+                  End-to-End Demo
+                </Button>
+              </Link>
+              <Link href="/demo">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2 border-green-600 text-green-600 hover:bg-green-50"
                   data-testid="button-demo"
                 >
                   <Zap className="w-4 h-4" />
-                  See Real Demo
+                  Quick Demo
                 </Button>
               </Link>
               <Link href="/ai">

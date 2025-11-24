@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Code, Database, Workflow, Zap, GitBranch, Server, ArrowLeft, CheckCircle2, AlertCircle, Layers } from "lucide-react";
+import { Code, Database, Workflow, Zap, GitBranch, Server, ArrowLeft, CheckCircle2, AlertCircle, Layers, Activity } from "lucide-react";
 import { Link } from "wouter";
 
 export default function FAQ() {
@@ -1240,6 +1240,23 @@ SELECT DISTINCT patient_id FROM Numerator;`}
             <Link href="/cql-functions">
               <Button size="sm" variant="outline">
                 View CQL Functions Guide
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card className="border-green-200 bg-green-50">
+          <CardContent className="pt-6">
+            <h4 className="font-semibold mb-2 flex items-center gap-2">
+              <Activity className="w-4 h-4" />
+              End-to-End Production Demo
+            </h4>
+            <p className="text-sm text-muted-foreground mb-3">
+              Experience a complete real-world workflow: Medplum FHIR server → NLM VSAC → Databricks → MeasureReport generation and write-back.
+            </p>
+            <Link href="/e2e-demo">
+              <Button size="sm" variant="outline">
+                Launch E2E Demo
               </Button>
             </Link>
           </CardContent>
