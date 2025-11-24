@@ -8,7 +8,7 @@
  * - MeasureReport generation and write-back
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -36,7 +36,8 @@ import {
   Cloud,
   Code,
   FileCheck,
-  Activity
+  Activity,
+  Settings
 } from "lucide-react";
 
 // Step status type
@@ -123,6 +124,8 @@ const WORKFLOW_STEPS = [
   }
 ];
 
+const CONFIG_STORAGE_KEY = "e2e-demo-config";
+
 export default function E2EDemo() {
   const [currentStep, setCurrentStep] = useState(1);
   const [stepStates, setStepStates] = useState<Record<number, StepState>>(
@@ -145,15 +148,43 @@ export default function E2EDemo() {
   const [vsacConfig, setVsacConfig] = useState({
     apiKey: "",
     username: "",
-    password: ""
+    password: "",
+    valueSetOids: []
   });
 
   const [databricksConfig, setDatabricksConfig] = useState({
     host: "",
     token: "",
     warehouse: "",
-    catalog: "fhir_analytics"
+    catalog: "fhir_analytics",
+    schema: "bronze"
   });
+
+  // Load configuration from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem(CONFIG_STORAGE_KEY);
+    if (saved) {
+      try {
+        const config = JSON.parse(saved);
+        if (config.medplum) setMedplumConfig(config.medplum);
+        if (config.vsac) setVsacConfig(config.vsac);
+        if (config.databricks) setDatabricksConfig(config.databricks);
+        if (config.execution) {
+          if (config.execution.patientIds?.length > 0) {
+            setPatientId(config.execution.patientIds[0]);
+          }
+          if (config.execution.measureIds?.length > 0) {
+            setSelectedMeasure(config.execution.measureIds[0]);
+          }
+          if (config.execution.libraryIds?.length > 0) {
+            setSelectedLibrary(config.execution.libraryIds[0]);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load configuration:", error);
+      }
+    }
+  }, []);
 
   const [selectedLibrary, setSelectedLibrary] = useState("");
   const [selectedMeasure, setSelectedMeasure] = useState("");
@@ -1079,11 +1110,17 @@ SELECT 'numerator', COUNT(DISTINCT patient_id) FROM numerator;`;
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <Link href="/">
-          <Button variant="outline" size="sm" className="flex items-center gap-2 mb-4">
+          <Button variant="outline" size="sm" className="flex items-center gap-2">
             <ArrowLeft className="w-4 h-4" />
             Back to Converter
+          </Button>
+        </Link>
+        <Link href="/e2e-config">
+          <Button variant="outline" size="sm" className="flex items-center gap-2">
+            <Settings className="w-4 h-4" />
+            Configuration
           </Button>
         </Link>
       </div>
