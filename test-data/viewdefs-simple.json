@@ -1,0 +1,206 @@
+{
+  "resourceType": "Bundle",
+  "type": "transaction",
+  "entry": [
+    {
+      "resource": {
+        "resourceType": "Basic",
+        "code": {
+          "coding": [
+            {
+              "system": "http://hl7.org/fhir/uv/sql-on-fhir",
+              "code": "ViewDefinition",
+              "display": "SQL on FHIR ViewDefinition"
+            }
+          ],
+          "text": "patient_view"
+        },
+        "subject": {
+          "display": "Patient Resource ViewDefinition"
+        },
+        "extension": [
+          {
+            "url": "http://example.org/viewdef-name",
+            "valueString": "patient_view"
+          },
+          {
+            "url": "http://example.org/viewdef-resource",
+            "valueString": "Patient"
+          },
+          {
+            "url": "http://example.org/viewdef-description",
+            "valueString": "Flattens Patient resources into tabular format"
+          },
+          {
+            "url": "http://example.org/viewdef-schema",
+            "valueString": "CREATE VIEW patient_view AS SELECT id, gender, birthdate, name_family, name_given, active, telecom_phone, telecom_email, TIMESTAMPDIFF(YEAR, birthdate, CURRENT_DATE()) as age_years FROM patient"
+          }
+        ]
+      },
+      "request": {
+        "method": "POST",
+        "url": "Basic"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Basic",
+        "code": {
+          "coding": [
+            {
+              "system": "http://hl7.org/fhir/uv/sql-on-fhir",
+              "code": "ViewDefinition",
+              "display": "SQL on FHIR ViewDefinition"
+            }
+          ],
+          "text": "encounter_view"
+        },
+        "subject": {
+          "display": "Encounter Resource ViewDefinition"
+        },
+        "extension": [
+          {
+            "url": "http://example.org/viewdef-name",
+            "valueString": "encounter_view"
+          },
+          {
+            "url": "http://example.org/viewdef-resource",
+            "valueString": "Encounter"
+          },
+          {
+            "url": "http://example.org/viewdef-description",
+            "valueString": "Flattens Encounter resources for visits and service delivery"
+          },
+          {
+            "url": "http://example.org/viewdef-schema",
+            "valueString": "CREATE VIEW encounter_view AS SELECT id, patient_id, status, class_code, type_code, type_display, period_start, period_end, DATEDIFF(DAY, period_start, COALESCE(period_end, period_start)) as duration_days FROM encounter"
+          }
+        ]
+      },
+      "request": {
+        "method": "POST",
+        "url": "Basic"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Basic",
+        "code": {
+          "coding": [
+            {
+              "system": "http://hl7.org/fhir/uv/sql-on-fhir",
+              "code": "ViewDefinition",
+              "display": "SQL on FHIR ViewDefinition"
+            }
+          ],
+          "text": "observation_view"
+        },
+        "subject": {
+          "display": "Observation Resource ViewDefinition"
+        },
+        "extension": [
+          {
+            "url": "http://example.org/viewdef-name",
+            "valueString": "observation_view"
+          },
+          {
+            "url": "http://example.org/viewdef-resource",
+            "valueString": "Observation"
+          },
+          {
+            "url": "http://example.org/viewdef-description",
+            "valueString": "Flattens Observation resources for clinical measurements"
+          },
+          {
+            "url": "http://example.org/viewdef-schema",
+            "valueString": "CREATE VIEW observation_view AS SELECT id, patient_id, status, code_system, code_code, code_display, effective_datetime, value_string, DATEDIFF(MONTH, effective_datetime, CURRENT_DATE()) as months_since_observation FROM observation"
+          }
+        ]
+      },
+      "request": {
+        "method": "POST",
+        "url": "Basic"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Basic",
+        "code": {
+          "coding": [
+            {
+              "system": "http://hl7.org/fhir/uv/sql-on-fhir",
+              "code": "ViewDefinition",
+              "display": "SQL on FHIR ViewDefinition"
+            }
+          ],
+          "text": "procedure_view"
+        },
+        "subject": {
+          "display": "Procedure Resource ViewDefinition"
+        },
+        "extension": [
+          {
+            "url": "http://example.org/viewdef-name",
+            "valueString": "procedure_view"
+          },
+          {
+            "url": "http://example.org/viewdef-resource",
+            "valueString": "Procedure"
+          },
+          {
+            "url": "http://example.org/viewdef-description",
+            "valueString": "Flattens Procedure resources for surgical interventions"
+          },
+          {
+            "url": "http://example.org/viewdef-schema",
+            "valueString": "CREATE VIEW procedure_view AS SELECT id, patient_id, status, code_system, code_code, code_display, performed_datetime, DATEDIFF(MONTH, performed_datetime, CURRENT_DATE()) as months_since_procedure FROM procedure"
+          }
+        ]
+      },
+      "request": {
+        "method": "POST",
+        "url": "Basic"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Basic",
+        "code": {
+          "coding": [
+            {
+              "system": "http://hl7.org/fhir/uv/sql-on-fhir",
+              "code": "ViewDefinition",
+              "display": "SQL on FHIR ViewDefinition"
+            }
+          ],
+          "text": "coverage_view"
+        },
+        "subject": {
+          "display": "Coverage Resource ViewDefinition"
+        },
+        "extension": [
+          {
+            "url": "http://example.org/viewdef-name",
+            "valueString": "coverage_view"
+          },
+          {
+            "url": "http://example.org/viewdef-resource",
+            "valueString": "Coverage"
+          },
+          {
+            "url": "http://example.org/viewdef-description",
+            "valueString": "Flattens Coverage resources for insurance information"
+          },
+          {
+            "url": "http://example.org/viewdef-schema",
+            "valueString": "CREATE VIEW coverage_view AS SELECT id, patient_id, status, type_code, type_display, subscriber_id, period_start, period_end, payor_display, CASE WHEN period_start <= CURRENT_DATE() AND period_end >= CURRENT_DATE() THEN true ELSE false END as is_active FROM coverage"
+          }
+        ]
+      },
+      "request": {
+        "method": "POST",
+        "url": "Basic"
+      }
+    }
+  ]
+}

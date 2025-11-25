@@ -1,0 +1,525 @@
+{
+  "resourceType": "Bundle",
+  "type": "transaction",
+  "entry": [
+    {
+      "resource": {
+        "resourceType": "Basic",
+        "id": "viewdef-patient",
+        "meta": {
+          "profile": ["http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/ViewDefinition"]
+        },
+        "code": {
+          "coding": [
+            {
+              "system": "http://hl7.org/fhir/uv/sql-on-fhir/CodeSystem/view-definition-type",
+              "code": "view-definition"
+            }
+          ]
+        },
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/viewdefinition-name",
+            "valueString": "patient_view"
+          },
+          {
+            "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/viewdefinition-resource",
+            "valueCode": "Patient"
+          },
+          {
+            "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/viewdefinition-status",
+            "valueCode": "active"
+          },
+          {
+            "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/viewdefinition-description",
+            "valueMarkdown": "Flattens Patient resources into tabular format with demographics and contact information"
+          },
+          {
+            "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/viewdefinition-select",
+            "extension": [
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "id" },
+                  { "url": "path", "valueString": "id" },
+                  { "url": "type", "valueCode": "string" },
+                  { "url": "description", "valueString": "Patient identifier" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "gender" },
+                  { "url": "path", "valueString": "gender" },
+                  { "url": "type", "valueCode": "string" },
+                  { "url": "description", "valueString": "Administrative gender" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "birthdate" },
+                  { "url": "path", "valueString": "birthDate" },
+                  { "url": "type", "valueCode": "date" },
+                  { "url": "description", "valueString": "Date of birth" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "name_family" },
+                  { "url": "path", "valueString": "name.where(use='official').family" },
+                  { "url": "type", "valueCode": "string" },
+                  { "url": "description", "valueString": "Family name (surname)" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "name_given" },
+                  { "url": "path", "valueString": "name.where(use='official').given" },
+                  { "url": "type", "valueCode": "string" },
+                  { "url": "collection", "valueBoolean": true },
+                  { "url": "description", "valueString": "Given names (first, middle)" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "active" },
+                  { "url": "path", "valueString": "active" },
+                  { "url": "type", "valueCode": "boolean" },
+                  { "url": "description", "valueString": "Whether patient record is active" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "telecom_phone" },
+                  { "url": "path", "valueString": "telecom.where(system='phone').value" },
+                  { "url": "type", "valueCode": "string" },
+                  { "url": "description", "valueString": "Phone number" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "telecom_email" },
+                  { "url": "path", "valueString": "telecom.where(system='email').value" },
+                  { "url": "type", "valueCode": "string" },
+                  { "url": "description", "valueString": "Email address" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Basic/viewdef-patient"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Basic",
+        "id": "viewdef-encounter",
+        "meta": {
+          "profile": ["http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/ViewDefinition"]
+        },
+        "code": {
+          "coding": [
+            {
+              "system": "http://hl7.org/fhir/uv/sql-on-fhir/CodeSystem/view-definition-type",
+              "code": "view-definition"
+            }
+          ]
+        },
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/viewdefinition-name",
+            "valueString": "encounter_view"
+          },
+          {
+            "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/viewdefinition-resource",
+            "valueCode": "Encounter"
+          },
+          {
+            "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/viewdefinition-status",
+            "valueCode": "active"
+          },
+          {
+            "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/viewdefinition-description",
+            "valueMarkdown": "Flattens Encounter resources for visits and service delivery events"
+          },
+          {
+            "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/viewdefinition-select",
+            "extension": [
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "id" },
+                  { "url": "path", "valueString": "id" },
+                  { "url": "type", "valueCode": "string" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "patient_id" },
+                  { "url": "path", "valueString": "subject.reference.split('/')[1]" },
+                  { "url": "type", "valueCode": "string" },
+                  { "url": "description", "valueString": "Reference to Patient" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "status" },
+                  { "url": "path", "valueString": "status" },
+                  { "url": "type", "valueCode": "string" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "type_code" },
+                  { "url": "path", "valueString": "type.first().coding.first().code" },
+                  { "url": "type", "valueCode": "string" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "type_display" },
+                  { "url": "path", "valueString": "type.first().coding.first().display" },
+                  { "url": "type", "valueCode": "string" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "period_start" },
+                  { "url": "path", "valueString": "period.start" },
+                  { "url": "type", "valueCode": "dateTime" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "period_end" },
+                  { "url": "path", "valueString": "period.end" },
+                  { "url": "type", "valueCode": "dateTime" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Basic/viewdef-encounter"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Basic",
+        "id": "viewdef-observation",
+        "meta": {
+          "profile": ["http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/ViewDefinition"]
+        },
+        "code": {
+          "coding": [
+            {
+              "system": "http://hl7.org/fhir/uv/sql-on-fhir/CodeSystem/view-definition-type",
+              "code": "view-definition"
+            }
+          ]
+        },
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/viewdefinition-name",
+            "valueString": "observation_view"
+          },
+          {
+            "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/viewdefinition-resource",
+            "valueCode": "Observation"
+          },
+          {
+            "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/viewdefinition-status",
+            "valueCode": "active"
+          },
+          {
+            "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/viewdefinition-description",
+            "valueMarkdown": "Flattens Observation resources for clinical measurements and results"
+          },
+          {
+            "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/viewdefinition-select",
+            "extension": [
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "id" },
+                  { "url": "path", "valueString": "id" },
+                  { "url": "type", "valueCode": "string" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "patient_id" },
+                  { "url": "path", "valueString": "subject.reference.split('/')[1]" },
+                  { "url": "type", "valueCode": "string" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "status" },
+                  { "url": "path", "valueString": "status" },
+                  { "url": "type", "valueCode": "string" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "code_code" },
+                  { "url": "path", "valueString": "code.coding.first().code" },
+                  { "url": "type", "valueCode": "string" },
+                  { "url": "description", "valueString": "LOINC or other code" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "code_display" },
+                  { "url": "path", "valueString": "code.coding.first().display" },
+                  { "url": "type", "valueCode": "string" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "code_system" },
+                  { "url": "path", "valueString": "code.coding.first().system" },
+                  { "url": "type", "valueCode": "string" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "effective_datetime" },
+                  { "url": "path", "valueString": "effectiveDateTime" },
+                  { "url": "type", "valueCode": "dateTime" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Basic/viewdef-observation"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Basic",
+        "id": "viewdef-procedure",
+        "meta": {
+          "profile": ["http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/ViewDefinition"]
+        },
+        "code": {
+          "coding": [
+            {
+              "system": "http://hl7.org/fhir/uv/sql-on-fhir/CodeSystem/view-definition-type",
+              "code": "view-definition"
+            }
+          ]
+        },
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/viewdefinition-name",
+            "valueString": "procedure_view"
+          },
+          {
+            "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/viewdefinition-resource",
+            "valueCode": "Procedure"
+          },
+          {
+            "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/viewdefinition-status",
+            "valueCode": "active"
+          },
+          {
+            "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/viewdefinition-description",
+            "valueMarkdown": "Flattens Procedure resources for surgical and therapeutic interventions"
+          },
+          {
+            "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/viewdefinition-select",
+            "extension": [
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "id" },
+                  { "url": "path", "valueString": "id" },
+                  { "url": "type", "valueCode": "string" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "patient_id" },
+                  { "url": "path", "valueString": "subject.reference.split('/')[1]" },
+                  { "url": "type", "valueCode": "string" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "status" },
+                  { "url": "path", "valueString": "status" },
+                  { "url": "type", "valueCode": "string" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "code_code" },
+                  { "url": "path", "valueString": "code.coding.first().code" },
+                  { "url": "type", "valueCode": "string" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "code_display" },
+                  { "url": "path", "valueString": "code.coding.first().display" },
+                  { "url": "type", "valueCode": "string" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "code_system" },
+                  { "url": "path", "valueString": "code.coding.first().system" },
+                  { "url": "type", "valueCode": "string" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "performed_datetime" },
+                  { "url": "path", "valueString": "performedDateTime" },
+                  { "url": "type", "valueCode": "dateTime" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Basic/viewdef-procedure"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Basic",
+        "id": "viewdef-coverage",
+        "meta": {
+          "profile": ["http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/ViewDefinition"]
+        },
+        "code": {
+          "coding": [
+            {
+              "system": "http://hl7.org/fhir/uv/sql-on-fhir/CodeSystem/view-definition-type",
+              "code": "view-definition"
+            }
+          ]
+        },
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/viewdefinition-name",
+            "valueString": "coverage_view"
+          },
+          {
+            "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/viewdefinition-resource",
+            "valueCode": "Coverage"
+          },
+          {
+            "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/viewdefinition-status",
+            "valueCode": "active"
+          },
+          {
+            "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/viewdefinition-description",
+            "valueMarkdown": "Flattens Coverage resources for insurance and eligibility information"
+          },
+          {
+            "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/viewdefinition-select",
+            "extension": [
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "id" },
+                  { "url": "path", "valueString": "id" },
+                  { "url": "type", "valueCode": "string" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "patient_id" },
+                  { "url": "path", "valueString": "beneficiary.reference.split('/')[1]" },
+                  { "url": "type", "valueCode": "string" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "status" },
+                  { "url": "path", "valueString": "status" },
+                  { "url": "type", "valueCode": "string" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "type_code" },
+                  { "url": "path", "valueString": "type.coding.first().code" },
+                  { "url": "type", "valueCode": "string" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "period_start" },
+                  { "url": "path", "valueString": "period.start" },
+                  { "url": "type", "valueCode": "date" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "period_end" },
+                  { "url": "path", "valueString": "period.end" },
+                  { "url": "type", "valueCode": "date" }
+                ]
+              },
+              {
+                "url": "column",
+                "extension": [
+                  { "url": "name", "valueString": "payor_display" },
+                  { "url": "path", "valueString": "payor.first().display" },
+                  { "url": "type", "valueCode": "string" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Basic/viewdef-coverage"
+      }
+    }
+  ]
+}
