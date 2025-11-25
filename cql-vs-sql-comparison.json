@@ -1,0 +1,71 @@
+{
+  "timestamp": "2025-11-25T02:28:12.247Z",
+  "approaches": {
+    "cql": {
+      "method": "CQL Execution",
+      "steps": [
+        {
+          "name": "Fetch FHIR resources",
+          "duration_ms": 492,
+          "details": "8 resources"
+        },
+        {
+          "name": "Evaluate CQL logic",
+          "duration_ms": 0,
+          "details": "In-memory evaluation"
+        },
+        {
+          "name": "Generate MeasureReport",
+          "duration_ms": 0,
+          "details": "FHIR resource creation"
+        }
+      ],
+      "total_duration_ms": 493,
+      "results": {
+        "initial_population": 3,
+        "denominator": 2,
+        "denominator_exclusion": 1,
+        "numerator": 1,
+        "performance_rate": "50.00%"
+      },
+      "characteristics": [
+        "Requires fetching all FHIR resources",
+        "In-memory processing of JSON data",
+        "Complex nested object traversal",
+        "Difficult to parallelize",
+        "Limited to single-server resources"
+      ]
+    },
+    "sql": {
+      "method": "SQL on FHIR",
+      "steps": [
+        {
+          "name": "Query SQL views",
+          "duration_ms": 1459,
+          "details": "Single SQL query on flattened data"
+        },
+        {
+          "name": "Transform to FHIR",
+          "duration_ms": 0,
+          "details": "Map SQL results to MeasureReport"
+        }
+      ],
+      "total_duration_ms": 1459,
+      "results": {
+        "initial_population": 3,
+        "denominator": 2,
+        "denominator_exclusion": 1,
+        "numerator": 1,
+        "performance_rate": "50.00%"
+      },
+      "characteristics": [
+        "Uses pre-flattened SQL views",
+        "Single SQL query for all populations",
+        "Leverages database optimization",
+        "Highly parallelizable",
+        "Scales to millions of records",
+        "Standard SQL syntax (portable)"
+      ]
+    }
+  }
+}

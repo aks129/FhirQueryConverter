@@ -1,0 +1,368 @@
+{
+  "resourceType": "Bundle",
+  "type": "transaction",
+  "entry": [
+    {
+      "resource": {
+        "resourceType": "ViewDefinition",
+        "id": "patient-view",
+        "url": "http://example.org/fhir/ViewDefinition/patient-view",
+        "name": "patient_view",
+        "status": "active",
+        "resource": "Patient",
+        "select": [
+          {
+            "column": [
+              {
+                "name": "id",
+                "path": "id",
+                "type": "string"
+              },
+              {
+                "name": "gender",
+                "path": "gender",
+                "type": "string"
+              },
+              {
+                "name": "birthdate",
+                "path": "birthDate",
+                "type": "date"
+              },
+              {
+                "name": "name_family",
+                "path": "name.where(use='official').family",
+                "type": "string"
+              },
+              {
+                "name": "name_given",
+                "path": "name.where(use='official').given",
+                "type": "string",
+                "collection": true
+              },
+              {
+                "name": "active",
+                "path": "active",
+                "type": "boolean"
+              },
+              {
+                "name": "telecom_phone",
+                "path": "telecom.where(system='phone').value",
+                "type": "string"
+              },
+              {
+                "name": "telecom_email",
+                "path": "telecom.where(system='email').value",
+                "type": "string"
+              },
+              {
+                "name": "address_line",
+                "path": "address.where(use='home').line",
+                "type": "string",
+                "collection": true
+              },
+              {
+                "name": "address_city",
+                "path": "address.where(use='home').city",
+                "type": "string"
+              },
+              {
+                "name": "address_state",
+                "path": "address.where(use='home').state",
+                "type": "string"
+              },
+              {
+                "name": "address_postal_code",
+                "path": "address.where(use='home').postalCode",
+                "type": "string"
+              }
+            ]
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "ViewDefinition/patient-view"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "ViewDefinition",
+        "id": "encounter-view",
+        "url": "http://example.org/fhir/ViewDefinition/encounter-view",
+        "name": "encounter_view",
+        "status": "active",
+        "resource": "Encounter",
+        "select": [
+          {
+            "column": [
+              {
+                "name": "id",
+                "path": "id",
+                "type": "string"
+              },
+              {
+                "name": "patient_id",
+                "path": "subject.reference.split('/')[1]",
+                "type": "string"
+              },
+              {
+                "name": "status",
+                "path": "status",
+                "type": "string"
+              },
+              {
+                "name": "class_code",
+                "path": "class.code",
+                "type": "string"
+              },
+              {
+                "name": "class_display",
+                "path": "class.display",
+                "type": "string"
+              },
+              {
+                "name": "type_code",
+                "path": "type.first().coding.first().code",
+                "type": "string"
+              },
+              {
+                "name": "type_display",
+                "path": "type.first().coding.first().display",
+                "type": "string"
+              },
+              {
+                "name": "type_system",
+                "path": "type.first().coding.first().system",
+                "type": "string"
+              },
+              {
+                "name": "period_start",
+                "path": "period.start",
+                "type": "dateTime"
+              },
+              {
+                "name": "period_end",
+                "path": "period.end",
+                "type": "dateTime"
+              }
+            ]
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "ViewDefinition/encounter-view"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "ViewDefinition",
+        "id": "observation-view",
+        "url": "http://example.org/fhir/ViewDefinition/observation-view",
+        "name": "observation_view",
+        "status": "active",
+        "resource": "Observation",
+        "select": [
+          {
+            "column": [
+              {
+                "name": "id",
+                "path": "id",
+                "type": "string"
+              },
+              {
+                "name": "patient_id",
+                "path": "subject.reference.split('/')[1]",
+                "type": "string"
+              },
+              {
+                "name": "status",
+                "path": "status",
+                "type": "string"
+              },
+              {
+                "name": "category_code",
+                "path": "category.first().coding.first().code",
+                "type": "string"
+              },
+              {
+                "name": "category_system",
+                "path": "category.first().coding.first().system",
+                "type": "string"
+              },
+              {
+                "name": "code_code",
+                "path": "code.coding.first().code",
+                "type": "string"
+              },
+              {
+                "name": "code_display",
+                "path": "code.coding.first().display",
+                "type": "string"
+              },
+              {
+                "name": "code_system",
+                "path": "code.coding.first().system",
+                "type": "string"
+              },
+              {
+                "name": "effective_datetime",
+                "path": "effectiveDateTime",
+                "type": "dateTime"
+              },
+              {
+                "name": "value_quantity_value",
+                "path": "valueQuantity.value",
+                "type": "decimal"
+              },
+              {
+                "name": "value_quantity_unit",
+                "path": "valueQuantity.unit",
+                "type": "string"
+              },
+              {
+                "name": "value_string",
+                "path": "valueString",
+                "type": "string"
+              }
+            ]
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "ViewDefinition/observation-view"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "ViewDefinition",
+        "id": "procedure-view",
+        "url": "http://example.org/fhir/ViewDefinition/procedure-view",
+        "name": "procedure_view",
+        "status": "active",
+        "resource": "Procedure",
+        "select": [
+          {
+            "column": [
+              {
+                "name": "id",
+                "path": "id",
+                "type": "string"
+              },
+              {
+                "name": "patient_id",
+                "path": "subject.reference.split('/')[1]",
+                "type": "string"
+              },
+              {
+                "name": "status",
+                "path": "status",
+                "type": "string"
+              },
+              {
+                "name": "code_code",
+                "path": "code.coding.first().code",
+                "type": "string"
+              },
+              {
+                "name": "code_display",
+                "path": "code.coding.first().display",
+                "type": "string"
+              },
+              {
+                "name": "code_system",
+                "path": "code.coding.first().system",
+                "type": "string"
+              },
+              {
+                "name": "performed_datetime",
+                "path": "performedDateTime",
+                "type": "dateTime"
+              },
+              {
+                "name": "performed_period_start",
+                "path": "performedPeriod.start",
+                "type": "dateTime"
+              },
+              {
+                "name": "performed_period_end",
+                "path": "performedPeriod.end",
+                "type": "dateTime"
+              }
+            ]
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "ViewDefinition/procedure-view"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "ViewDefinition",
+        "id": "coverage-view",
+        "url": "http://example.org/fhir/ViewDefinition/coverage-view",
+        "name": "coverage_view",
+        "status": "active",
+        "resource": "Coverage",
+        "select": [
+          {
+            "column": [
+              {
+                "name": "id",
+                "path": "id",
+                "type": "string"
+              },
+              {
+                "name": "patient_id",
+                "path": "beneficiary.reference.split('/')[1]",
+                "type": "string"
+              },
+              {
+                "name": "status",
+                "path": "status",
+                "type": "string"
+              },
+              {
+                "name": "type_code",
+                "path": "type.coding.first().code",
+                "type": "string"
+              },
+              {
+                "name": "type_display",
+                "path": "type.coding.first().display",
+                "type": "string"
+              },
+              {
+                "name": "subscriber_id",
+                "path": "subscriberId",
+                "type": "string"
+              },
+              {
+                "name": "period_start",
+                "path": "period.start",
+                "type": "date"
+              },
+              {
+                "name": "period_end",
+                "path": "period.end",
+                "type": "date"
+              },
+              {
+                "name": "payor_display",
+                "path": "payor.first().display",
+                "type": "string"
+              }
+            ]
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "ViewDefinition/coverage-view"
+      }
+    }
+  ]
+}
