@@ -1,0 +1,110 @@
+{
+  "timestamp": "2025-11-25T01:03:32.214Z",
+  "steps": {
+    "step1": {
+      "status": "success",
+      "message": "Connected to Medplum"
+    },
+    "step2": {
+      "status": "success",
+      "library": "BCSComponent",
+      "measure": "Breast Cancer Screening"
+    },
+    "step3": {
+      "status": "success",
+      "patient": "Jane Marie TestPatient",
+      "encounters": 0,
+      "observations": 0
+    },
+    "step4": {
+      "status": "success",
+      "view": "cms125_measure_report"
+    },
+    "step5": {
+      "status": "success",
+      "results": [
+        [
+          "initial-population",
+          "1",
+          null
+        ],
+        [
+          "denominator",
+          "1",
+          null
+        ],
+        [
+          "numerator",
+          "1",
+          "100.00"
+        ]
+      ]
+    },
+    "step6": {
+      "status": "success",
+      "measureReportId": "08bec7be-58ac-4372-9936-1205a2fb9252",
+      "measureScore": 100
+    }
+  },
+  "measureReport": {
+    "resourceType": "MeasureReport",
+    "status": "complete",
+    "type": "individual",
+    "measure": "Measure/13e620a1-2f21-4d65-ad10-7ba18b83b1f1",
+    "subject": {
+      "reference": "Patient/bfa58977-4614-4ca2-9a3f-a1b0f3b04142"
+    },
+    "date": "2025-11-25T01:03:32.045Z",
+    "period": {
+      "start": "2023-11-25",
+      "end": "2025-11-25"
+    },
+    "group": [
+      {
+        "population": [
+          {
+            "code": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                  "code": "initial-population"
+                }
+              ]
+            },
+            "count": 1
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                  "code": "denominator"
+                }
+              ]
+            },
+            "count": 1
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                  "code": "numerator"
+                }
+              ]
+            },
+            "count": 1
+          }
+        ],
+        "measureScore": {
+          "value": 100
+        }
+      }
+    ],
+    "id": "08bec7be-58ac-4372-9936-1205a2fb9252",
+    "meta": {
+      "versionId": "907e4d4a-a2b9-469f-a889-56f82ec87f35",
+      "lastUpdated": "2025-11-25T01:03:31.482Z"
+    }
+  }
+}
