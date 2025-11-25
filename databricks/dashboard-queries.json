@@ -1,0 +1,113 @@
+{
+  "name": "Quality Measure Dashboard Queries",
+  "description": "SQL queries for Databricks dashboard widgets - CMS125 Breast Cancer Screening",
+  "created": "2025-01-24",
+  "widgets": [
+    {
+      "id": "w1-performance-score",
+      "name": "Performance Score Card",
+      "type": "counter",
+      "description": "Shows current performance rate for selected measure",
+      "sql": "SELECT\n  measure_name,\n  performance_rate AS \"Performance Rate %\",\n  performance_category AS \"Status\"\nFROM workspace.default.dashboard_measure_performance\nWHERE measure_id = 'CMS125'\nORDER BY created_at DESC\nLIMIT 1"
+    },
+    {
+      "id": "w2-population-funnel",
+      "name": "Population Funnel",
+      "type": "bar_chart",
+      "description": "Horizontal bar chart showing population progression from initial to numerator",
+      "sql": "SELECT\n  population_type,\n  count,\n  CONCAT(ROUND(count * 100.0 / MAX(count) OVER (), 1), '%') AS percentage_of_initial\nFROM workspace.default.dashboard_population_breakdown\nWHERE measure_id = 'CMS125'\nORDER BY sort_order"
+    },
+    {
+      "id": "w3-gap-status",
+      "name": "Gap Status Distribution",
+      "type": "pie_chart",
+      "description": "Pie chart showing patient distribution by gap status (closed/open/excluded)",
+      "sql": "SELECT\n  CASE gap_status\n    WHEN 'closed' THEN 'Compliant'\n    WHEN 'open' THEN 'Gap Open'\n    WHEN 'excluded' THEN 'Excluded'\n  END AS \"Status\",\n  patient_count AS \"Patients\",\n  CONCAT(percentage, '%') AS \"Percentage\"\nFROM workspace.default.dashboard_gap_analysis\nWHERE measure_id = 'CMS125'"
+    },
+    {
+      "id": "w4-patient-gaps",
+      "name": "Patient List with Gaps",
+      "type": "table",
+      "description": "Table showing all patients with their gap status for targeted outreach",
+      "sql": "SELECT\n  patient_id AS \"Patient ID\",\n  CONCAT(name_given, ' ', name_family) AS \"Patient Name\",\n  gender AS \"Gender\",\n  age_years AS \"Age\",\n  gap_status AS \"Gap Status\",\n  population_membership AS \"Population\"\nFROM workspace.default.dashboard_patient_detail\nWHERE measure_id = 'CMS125'\nORDER BY\n  CASE gap_status WHEN 'open' THEN 1 WHEN 'excluded' THEN 2 ELSE 3 END,\n  name_family"
+    },
+    {
+      "id": "w5-measure-comparison",
+      "name": "Measure Comparison",
+      "type": "table",
+      "description": "Compare all quality measures side by side",
+      "sql": "SELECT\n  measure_id AS \"Measure\",\n  measure_name AS \"Name\",\n  denominator AS \"Eligible\",\n  numerator AS \"Compliant\",\n  care_gaps AS \"Gaps\",\n  CONCAT(performance_rate, '%') AS \"Rate\",\n  evaluation_method AS \"Method\"\nFROM workspace.default.dashboard_measure_comparison\nORDER BY performance_rate DESC"
+    },
+    {
+      "id": "w6-performance-trend",
+      "name": "Performance Over Time",
+      "type": "line_chart",
+      "description": "Line chart showing performance trend over multiple evaluation periods",
+      "sql": "SELECT\n  report_date,\n  performance_rate,\n  measure_id\nFROM workspace.default.dashboard_performance_trend\nWHERE measure_id = 'CMS125'\nORDER BY report_date"
+    },
+    {
+      "id": "w7-population-details",
+      "name": "Population Details Table",
+      "type": "table",
+      "description": "Detailed breakdown of all measure populations",
+      "sql": "SELECT\n  measure_name AS \"Measure\",\n  initial_population AS \"Initial Pop\",\n  denominator AS \"Denominator\",\n  denominator_exclusion AS \"Exclusions\",\n  numerator AS \"Numerator\",\n  CONCAT(performance_rate, '%') AS \"Performance\",\n  evaluation_method AS \"Method\",\n  DATE(created_at) AS \"Evaluated\"\nFROM workspace.default.dashboard_measure_performance\nORDER BY created_at DESC"
+    },
+    {
+      "id": "w8-care-gap-summary",
+      "name": "Care Gap Summary",
+      "type": "counter_group",
+      "description": "Key metrics counters for care gap management",
+      "sql": "SELECT\n  SUM(CASE WHEN gap_status = 'closed' THEN patient_count ELSE 0 END) AS \"Gaps Closed\",\n  SUM(CASE WHEN gap_status = 'open' THEN patient_count ELSE 0 END) AS \"Open Gaps\",\n  SUM(CASE WHEN gap_status = 'excluded' THEN patient_count ELSE 0 END) AS \"Excluded\"\nFROM workspace.default.dashboard_gap_analysis\nWHERE measure_id = 'CMS125'"
+    },
+    {
+      "id": "w9-open-gaps-only",
+      "name": "Patients with Open Gaps",
+      "type": "table",
+      "description": "Filter table showing only patients who need intervention",
+      "sql": "SELECT\n  patient_id AS \"Patient ID\",\n  CONCAT(name_given, ' ', name_family) AS \"Patient Name\",\n  gender AS \"Gender\",\n  age_years AS \"Age\"\nFROM workspace.default.dashboard_patient_detail\nWHERE measure_id = 'CMS125'\n  AND gap_status = 'open'\nORDER BY name_family"
+    },
+    {
+      "id": "w10-population-waterfall",
+      "name": "Population Waterfall",
+      "type": "table",
+      "description": "Shows progression with calculated differences between populations",
+      "sql": "SELECT\n  'Initial Population' AS Stage,\n  (SELECT initial_population FROM workspace.default.measure_reports WHERE measure_id = 'CMS125' ORDER BY created_at DESC LIMIT 1) AS Count,\n  '' AS Difference\nUNION ALL\nSELECT\n  'Excluded (Bilateral Mastectomy)' AS Stage,\n  (SELECT denominator_exclusion FROM workspace.default.measure_reports WHERE measure_id = 'CMS125' ORDER BY created_at DESC LIMIT 1) AS Count,\n  CONCAT('-', (SELECT denominator_exclusion FROM workspace.default.measure_reports WHERE measure_id = 'CMS125' ORDER BY created_at DESC LIMIT 1)) AS Difference\nUNION ALL\nSELECT\n  'Denominator (Eligible)' AS Stage,\n  (SELECT denominator FROM workspace.default.measure_reports WHERE measure_id = 'CMS125' ORDER BY created_at DESC LIMIT 1) AS Count,\n  '' AS Difference\nUNION ALL\nSELECT\n  'Numerator (Compliant)' AS Stage,\n  (SELECT numerator FROM workspace.default.measure_reports WHERE measure_id = 'CMS125' ORDER BY created_at DESC LIMIT 1) AS Count,\n  CONCAT((SELECT numerator FROM workspace.default.measure_reports WHERE measure_id = 'CMS125' ORDER BY created_at DESC LIMIT 1), ' of ', (SELECT denominator FROM workspace.default.measure_reports WHERE measure_id = 'CMS125' ORDER BY created_at DESC LIMIT 1)) AS Difference"
+    }
+  ],
+  "views_created": [
+    {
+      "name": "dashboard_measure_performance",
+      "description": "Summary of measure performance with category classification"
+    },
+    {
+      "name": "dashboard_population_breakdown",
+      "description": "Population counts for bar/funnel charts"
+    },
+    {
+      "name": "dashboard_gap_analysis",
+      "description": "Gap status aggregation with percentages"
+    },
+    {
+      "name": "dashboard_patient_detail",
+      "description": "Patient-level detail for drill-down"
+    },
+    {
+      "name": "dashboard_performance_trend",
+      "description": "Time series data for trend analysis"
+    },
+    {
+      "name": "dashboard_measure_comparison",
+      "description": "Cross-measure comparison view"
+    }
+  ],
+  "tables_created": [
+    {
+      "name": "measure_reports",
+      "description": "Historical measure report storage"
+    },
+    {
+      "name": "patient_measure_status",
+      "description": "Patient-level gap tracking"
+    }
+  ]
+}
