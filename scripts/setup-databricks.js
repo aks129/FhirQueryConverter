@@ -203,6 +203,22 @@ async function main() {
       'Create coverage table'
     );
 
+    await executeSqlStatement(`
+      CREATE TABLE IF NOT EXISTS procedure (
+        id STRING NOT NULL COMMENT 'FHIR Resource ID',
+        patient_id STRING NOT NULL COMMENT 'Reference to Patient',
+        status STRING COMMENT 'Procedure status',
+        code_system STRING COMMENT 'Procedure code system',
+        code_code STRING COMMENT 'Procedure code',
+        code_display STRING COMMENT 'Procedure display name',
+        performed_datetime TIMESTAMP COMMENT 'Procedure performed date/time',
+        loaded_at TIMESTAMP COMMENT 'ETL load timestamp'
+      )
+      COMMENT 'Flattened Procedure resources from Medplum FHIR server'
+    `,
+      'Create procedure table'
+    );
+
     // ValueSet expansion table
     await executeSqlStatement(
       'USE SCHEMA terminology',

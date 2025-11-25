@@ -4,6 +4,9 @@
  * ETL: Load FHIR data from Medplum to Databricks
  */
 
+import fs from 'fs';
+import path from 'path';
+
 const MEDPLUM_BASE_URL = process.env.MEDPLUM_BASE_URL || 'https://api.medplum.com';
 const MEDPLUM_CLIENT_ID = process.env.MEDPLUM_CLIENT_ID;
 const MEDPLUM_CLIENT_SECRET = process.env.MEDPLUM_CLIENT_SECRET;
@@ -11,7 +14,12 @@ const DATABRICKS_HOST = process.env.DATABRICKS_HOST;
 const DATABRICKS_TOKEN = process.env.DATABRICKS_TOKEN;
 const DATABRICKS_WAREHOUSE = process.env.DATABRICKS_WAREHOUSE;
 
-const PATIENT_ID = 'bfa58977-4614-4ca2-9a3f-a1b0f3b04142';
+// Load all patient IDs from file
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+let PATIENT_IDS = [];
 
 let accessToken;
 
@@ -58,146 +66,201 @@ async function executeDatabricksSQL(sql, description) {
   }
 }
 
-async function loadPatient() {
+async function loadPatients() {
   console.log('\n👤 Loading patient data...');
 
-  const patient = await fetch(`${MEDPLUM_BASE_URL}/fhir/R4/Patient/${PATIENT_ID}`, {
-    headers: { 'Authorization': `Bearer ${accessToken}` },
-  }).then(r => r.json());
+  for (const patientId of PATIENT_IDS) {
+    const patient = await fetch(`${MEDPLUM_BASE_URL}/fhir/R4/Patient/${patientId}`, {
+      headers: { 'Authorization': `Bearer ${accessToken}` },
+    }).then(r => r.json());
 
-  const sql = `
-    INSERT INTO workspace.default.patient (
-      id, name_family, name_given, gender, birthdate, active, telecom_phone, telecom_email, loaded_at
-    ) VALUES (
-      '${patient.id}',
-      '${patient.name[0].family}',
-      array('${patient.name[0].given.join("', '")}'),
-      '${patient.gender}',
-      '${patient.birthDate}',
-      ${patient.active},
-      '${patient.telecom?.find(t => t.system === 'phone')?.value || ''}',
-      '${patient.telecom?.find(t => t.system === 'email')?.value || ''}',
-      CURRENT_TIMESTAMP()
-    )
-  `;
+    const sql = `
+      INSERT INTO workspace.default.patient (
+        id, name_family, name_given, gender, birthdate, active, telecom_phone, telecom_email, loaded_at
+      ) VALUES (
+        '${patient.id}',
+        '${patient.name[0].family}',
+        array('${patient.name[0].given.join("', '")}'),
+        '${patient.gender}',
+        '${patient.birthDate}',
+        ${patient.active},
+        '${patient.telecom?.find(t => t.system === 'phone')?.value || ''}',
+        '${patient.telecom?.find(t => t.system === 'email')?.value || ''}',
+        CURRENT_TIMESTAMP()
+      )
+    `;
 
-  await executeDatabricksSQL(sql, 'Insert patient data');
-  console.log(`✅ Loaded patient: ${patient.name[0].given.join(' ')} ${patient.name[0].family}`);
+    await executeDatabricksSQL(sql, `Insert patient ${patient.id}`);
+    console.log(`✅ Loaded patient: ${patient.name[0].given.join(' ')} ${patient.name[0].family}`);
+  }
 }
 
 async function loadEncounters() {
   console.log('\n🏥 Loading encounters...');
 
-  const bundle = await fetch(`${MEDPLUM_BASE_URL}/fhir/R4/Encounter?subject=Patient/${PATIENT_ID}`, {
-    headers: { 'Authorization': `Bearer ${accessToken}` },
-  }).then(r => r.json());
+  let totalEncounters = 0;
 
-  if (!bundle.entry || bundle.entry.length === 0) {
-    console.log('⚠️  No encounters found');
-    return;
+  for (const patientId of PATIENT_IDS) {
+    const bundle = await fetch(`${MEDPLUM_BASE_URL}/fhir/R4/Encounter?subject=Patient/${patientId}`, {
+      headers: { 'Authorization': `Bearer ${accessToken}` },
+    }).then(r => r.json());
+
+    if (!bundle.entry || bundle.entry.length === 0) {
+      continue;
+    }
+
+    for (const entry of bundle.entry) {
+      const enc = entry.resource;
+      const patientRef = enc.subject.reference.split('/')[1];
+
+      const sql = `
+        INSERT INTO workspace.default.encounter (
+          id, patient_id, status, class_code, type_code, type_display, period_start, period_end, loaded_at
+        ) VALUES (
+          '${enc.id}',
+          '${patientRef}',
+          '${enc.status}',
+          '${enc.class?.code || ''}',
+          '${enc.type?.[0]?.coding?.[0]?.code || ''}',
+          '${enc.type?.[0]?.coding?.[0]?.display || ''}',
+          '${enc.period?.start}',
+          '${enc.period?.end || enc.period?.start}',
+          CURRENT_TIMESTAMP()
+        )
+      `;
+
+      await executeDatabricksSQL(sql, `Insert encounter ${enc.id}`);
+      totalEncounters++;
+    }
   }
 
-  for (const entry of bundle.entry) {
-    const enc = entry.resource;
-    const patientRef = enc.subject.reference.split('/')[1];
-
-    const sql = `
-      INSERT INTO workspace.default.encounter (
-        id, patient_id, status, class_code, type_code, type_display, period_start, period_end, loaded_at
-      ) VALUES (
-        '${enc.id}',
-        '${patientRef}',
-        '${enc.status}',
-        '${enc.class?.code || ''}',
-        '${enc.type?.[0]?.coding?.[0]?.code || ''}',
-        '${enc.type?.[0]?.coding?.[0]?.display || ''}',
-        '${enc.period?.start}',
-        '${enc.period?.end || enc.period?.start}',
-        CURRENT_TIMESTAMP()
-      )
-    `;
-
-    await executeDatabricksSQL(sql, `Insert encounter ${enc.id}`);
-  }
-
-  console.log(`✅ Loaded ${bundle.entry.length} encounter(s)`);
+  console.log(`✅ Loaded ${totalEncounters} encounter(s)`);
 }
 
 async function loadObservations() {
   console.log('\n🔬 Loading observations...');
 
-  const bundle = await fetch(`${MEDPLUM_BASE_URL}/fhir/R4/Observation?subject=Patient/${PATIENT_ID}`, {
-    headers: { 'Authorization': `Bearer ${accessToken}` },
-  }).then(r => r.json());
+  let totalObservations = 0;
 
-  if (!bundle.entry || bundle.entry.length === 0) {
-    console.log('⚠️  No observations found');
-    return;
+  for (const patientId of PATIENT_IDS) {
+    const bundle = await fetch(`${MEDPLUM_BASE_URL}/fhir/R4/Observation?subject=Patient/${patientId}`, {
+      headers: { 'Authorization': `Bearer ${accessToken}` },
+    }).then(r => r.json());
+
+    if (!bundle.entry || bundle.entry.length === 0) {
+      continue;
+    }
+
+    for (const entry of bundle.entry) {
+      const obs = entry.resource;
+      const patientRef = obs.subject.reference.split('/')[1];
+
+      const sql = `
+        INSERT INTO workspace.default.observation (
+          id, patient_id, status, code_system, code_code, code_display, effective_datetime, value_string, loaded_at
+        ) VALUES (
+          '${obs.id}',
+          '${patientRef}',
+          '${obs.status}',
+          '${obs.code.coding[0].system}',
+          '${obs.code.coding[0].code}',
+          '${obs.code.coding[0].display}',
+          '${obs.effectiveDateTime}',
+          '${(obs.valueString || '').replace(/'/g, "''")}',
+          CURRENT_TIMESTAMP()
+        )
+      `;
+
+      await executeDatabricksSQL(sql, `Insert observation ${obs.id}`);
+      totalObservations++;
+    }
   }
 
-  for (const entry of bundle.entry) {
-    const obs = entry.resource;
-    const patientRef = obs.subject.reference.split('/')[1];
-
-    const sql = `
-      INSERT INTO workspace.default.observation (
-        id, patient_id, status, code_system, code_code, code_display, effective_datetime, value_string, loaded_at
-      ) VALUES (
-        '${obs.id}',
-        '${patientRef}',
-        '${obs.status}',
-        '${obs.code.coding[0].system}',
-        '${obs.code.coding[0].code}',
-        '${obs.code.coding[0].display}',
-        '${obs.effectiveDateTime}',
-        '${(obs.valueString || '').replace(/'/g, "''")}',
-        CURRENT_TIMESTAMP()
-      )
-    `;
-
-    await executeDatabricksSQL(sql, `Insert observation ${obs.id}`);
-  }
-
-  console.log(`✅ Loaded ${bundle.entry.length} observation(s)`);
+  console.log(`✅ Loaded ${totalObservations} observation(s)`);
 }
 
 async function loadCoverage() {
   console.log('\n💳 Loading coverage...');
 
-  const bundle = await fetch(`${MEDPLUM_BASE_URL}/fhir/R4/Coverage?beneficiary=Patient/${PATIENT_ID}`, {
-    headers: { 'Authorization': `Bearer ${accessToken}` },
-  }).then(r => r.json());
+  let totalCoverage = 0;
 
-  if (!bundle.entry || bundle.entry.length === 0) {
-    console.log('⚠️  No coverage found');
-    return;
+  for (const patientId of PATIENT_IDS) {
+    const bundle = await fetch(`${MEDPLUM_BASE_URL}/fhir/R4/Coverage?beneficiary=Patient/${patientId}`, {
+      headers: { 'Authorization': `Bearer ${accessToken}` },
+    }).then(r => r.json());
+
+    if (!bundle.entry || bundle.entry.length === 0) {
+      continue;
+    }
+
+    for (const entry of bundle.entry) {
+      const cov = entry.resource;
+      const patientRef = cov.beneficiary.reference.split('/')[1];
+
+      const sql = `
+        INSERT INTO workspace.default.coverage (
+          id, patient_id, status, type_code, type_display, subscriber_id, period_start, period_end, payor_display, loaded_at
+        ) VALUES (
+          '${cov.id}',
+          '${patientRef}',
+          '${cov.status}',
+          '${cov.type?.coding?.[0]?.code || ''}',
+          '${cov.type?.coding?.[0]?.display || ''}',
+          '${cov.subscriberId || ''}',
+          '${cov.period?.start}',
+          '${cov.period?.end}',
+          '${cov.payor?.[0]?.display || ''}',
+          CURRENT_TIMESTAMP()
+        )
+      `;
+
+      await executeDatabricksSQL(sql, `Insert coverage ${cov.id}`);
+      totalCoverage++;
+    }
   }
 
-  for (const entry of bundle.entry) {
-    const cov = entry.resource;
-    const patientRef = cov.beneficiary.reference.split('/')[1];
+  console.log(`✅ Loaded ${totalCoverage} coverage(s)`);
+}
 
-    const sql = `
-      INSERT INTO workspace.default.coverage (
-        id, patient_id, status, type_code, type_display, subscriber_id, period_start, period_end, payor_display, loaded_at
-      ) VALUES (
-        '${cov.id}',
-        '${patientRef}',
-        '${cov.status}',
-        '${cov.type?.coding?.[0]?.code || ''}',
-        '${cov.type?.coding?.[0]?.display || ''}',
-        '${cov.subscriberId || ''}',
-        '${cov.period?.start}',
-        '${cov.period?.end}',
-        '${cov.payor?.[0]?.display || ''}',
-        CURRENT_TIMESTAMP()
-      )
-    `;
+async function loadProcedures() {
+  console.log('\n⚕️  Loading procedures...');
 
-    await executeDatabricksSQL(sql, `Insert coverage ${cov.id}`);
+  let totalProcedures = 0;
+
+  for (const patientId of PATIENT_IDS) {
+    const bundle = await fetch(`${MEDPLUM_BASE_URL}/fhir/R4/Procedure?subject=Patient/${patientId}`, {
+      headers: { 'Authorization': `Bearer ${accessToken}` },
+    }).then(r => r.json());
+
+    if (!bundle.entry || bundle.entry.length === 0) {
+      continue;
+    }
+
+    for (const entry of bundle.entry) {
+      const proc = entry.resource;
+      const patientRef = proc.subject.reference.split('/')[1];
+
+      const sql = `
+        INSERT INTO workspace.default.procedure (
+          id, patient_id, status, code_system, code_code, code_display, performed_datetime, loaded_at
+        ) VALUES (
+          '${proc.id}',
+          '${patientRef}',
+          '${proc.status}',
+          '${proc.code?.coding?.[0]?.system || ''}',
+          '${proc.code?.coding?.[0]?.code || ''}',
+          '${proc.code?.coding?.[0]?.display || ''}',
+          '${proc.performedDateTime || ''}',
+          CURRENT_TIMESTAMP()
+        )
+      `;
+
+      await executeDatabricksSQL(sql, `Insert procedure ${proc.id}`);
+      totalProcedures++;
+    }
   }
 
-  console.log(`✅ Loaded ${bundle.entry.length} coverage(s)`);
+  console.log(`✅ Loaded ${totalProcedures} procedure(s)`);
 }
 
 async function loadValueSetExpansion() {
@@ -236,21 +299,34 @@ async function main() {
   console.log('==========================================');
 
   try {
+    // Load patient IDs from file
+    const idsPath = path.join(__dirname, '..', 'test-data', 'patient-ids.json');
+    if (!fs.existsSync(idsPath)) {
+      throw new Error('Patient IDs file not found. Please run load-multiple-patients.js first.');
+    }
+
+    const patientIdsData = JSON.parse(fs.readFileSync(idsPath, 'utf8'));
+    PATIENT_IDS = Object.values(patientIdsData);
+
+    console.log(`\n📋 Loading data for ${PATIENT_IDS.length} patients...`);
+    console.log(`   Patient IDs: ${PATIENT_IDS.join(', ')}`);
+
     console.log('\n🔑 Authenticating with Medplum...');
     await getMedplumToken();
     console.log('✅ Authenticated');
 
-    await loadPatient();
+    await loadPatients();
     await loadEncounters();
     await loadObservations();
     await loadCoverage();
+    await loadProcedures();
     await loadValueSetExpansion();
 
     console.log('\n==========================================');
     console.log('✅ ETL Complete!');
     console.log('==========================================\n');
     console.log('Data loaded to Databricks:');
-    console.log('  - 1 patient');
+    console.log(`  - ${PATIENT_IDS.length} patients`);
     console.log('  - Encounters, Observations, Coverage');
     console.log('  - ValueSet expansion (7 codes)\n');
 

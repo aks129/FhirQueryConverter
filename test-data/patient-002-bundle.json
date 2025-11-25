@@ -1,0 +1,123 @@
+{
+  "resourceType": "Bundle",
+  "type": "transaction",
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:patient-002",
+      "resource": {
+        "resourceType": "Patient",
+        "identifier": [
+          {
+            "system": "http://example.org/mrn",
+            "value": "TEST002"
+          }
+        ],
+        "name": [
+          {
+            "use": "official",
+            "family": "Williams",
+            "given": ["Sarah", "Anne"]
+          }
+        ],
+        "gender": "female",
+        "birthDate": "1965-08-22",
+        "active": true,
+        "telecom": [
+          {
+            "system": "phone",
+            "value": "555-0102",
+            "use": "home"
+          },
+          {
+            "system": "email",
+            "value": "sarah.williams@example.com"
+          }
+        ],
+        "address": [
+          {
+            "use": "home",
+            "line": ["456 Oak Avenue"],
+            "city": "Portland",
+            "state": "OR",
+            "postalCode": "97201",
+            "country": "US"
+          }
+        ]
+      },
+      "request": {
+        "method": "POST",
+        "url": "Patient"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:encounter-002",
+      "resource": {
+        "resourceType": "Encounter",
+        "status": "finished",
+        "class": {
+          "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+          "code": "AMB",
+          "display": "ambulatory"
+        },
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://www.ama-assn.org/go/cpt",
+                "code": "99213",
+                "display": "Office outpatient visit 15 minutes"
+              }
+            ]
+          }
+        ],
+        "subject": {
+          "reference": "urn:uuid:patient-002"
+        },
+        "period": {
+          "start": "2024-06-10T09:30:00Z",
+          "end": "2024-06-10T09:45:00Z"
+        }
+      },
+      "request": {
+        "method": "POST",
+        "url": "Encounter"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:coverage-002",
+      "resource": {
+        "resourceType": "Coverage",
+        "status": "active",
+        "type": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+              "code": "HMO",
+              "display": "Health Maintenance Organization"
+            }
+          ]
+        },
+        "subscriber": {
+          "reference": "urn:uuid:patient-002"
+        },
+        "beneficiary": {
+          "reference": "urn:uuid:patient-002"
+        },
+        "subscriberId": "HMO-002-987654",
+        "period": {
+          "start": "2024-01-01",
+          "end": "2024-12-31"
+        },
+        "payor": [
+          {
+            "display": "Aetna Health Insurance"
+          }
+        ]
+      },
+      "request": {
+        "method": "POST",
+        "url": "Coverage"
+      }
+    }
+  ]
+}
