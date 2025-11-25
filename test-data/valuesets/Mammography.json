@@ -1,0 +1,48 @@
+{
+  "resourceType": "ValueSet",
+  "id": "2.16.840.1.113883.3.464.1003.198.12.1011",
+  "url": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.198.12.1011",
+  "name": "Mammography",
+  "title": "Mammography",
+  "status": "active",
+  "expansion": {
+    "timestamp": "2024-11-24T00:00:00Z",
+    "contains": [
+      {
+        "system": "http://loinc.org",
+        "code": "24606-6",
+        "display": "Mammography bilateral"
+      },
+      {
+        "system": "http://loinc.org",
+        "code": "36625-3",
+        "display": "Mammography unilateral"
+      },
+      {
+        "system": "http://loinc.org",
+        "code": "37768-7",
+        "display": "Mammography screening"
+      },
+      {
+        "system": "http://loinc.org",
+        "code": "37549-1",
+        "display": "Mammography diagnostic"
+      },
+      {
+        "system": "http://www.ama-assn.org/go/cpt",
+        "code": "77065",
+        "display": "Diagnostic mammography, including CAD when performed; unilateral"
+      },
+      {
+        "system": "http://www.ama-assn.org/go/cpt",
+        "code": "77066",
+        "display": "Diagnostic mammography, including CAD when performed; bilateral"
+      },
+      {
+        "system": "http://www.ama-assn.org/go/cpt",
+        "code": "77067",
+        "display": "Screening mammography, bilateral (2-view study of each breast), including CAD when performed"
+      }
+    ]
+  }
+}

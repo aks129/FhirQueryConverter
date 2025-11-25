@@ -1,0 +1,117 @@
+{
+  "resourceType": "Measure",
+  "id": "cms125",
+  "url": "http://ecqi.healthit.gov/ecqms/Measure/CMS125",
+  "version": "10.2.000",
+  "name": "CMS125",
+  "title": "Breast Cancer Screening",
+  "status": "active",
+  "experimental": false,
+  "date": "2022-02-22",
+  "publisher": "Centers for Medicare & Medicaid Services (CMS)",
+  "description": "Percentage of women 51-74 years of age who had a mammogram to screen for breast cancer in the 27 months prior to the end of the measurement period",
+  "purpose": "Women 51-74 years of age with a visit during the measurement period",
+  "effectivePeriod": {
+    "start": "2024-01-01",
+    "end": "2024-12-31"
+  },
+  "library": [
+    "http://ecqi.healthit.gov/ecqms/Library/BCSComponent"
+  ],
+  "scoring": {
+    "coding": [{
+      "system": "http://terminology.hl7.org/CodeSystem/measure-scoring",
+      "code": "proportion",
+      "display": "Proportion"
+    }]
+  },
+  "type": [{
+    "coding": [{
+      "system": "http://terminology.hl7.org/CodeSystem/measure-type",
+      "code": "process",
+      "display": "Process"
+    }]
+  }],
+  "improvementNotation": {
+    "coding": [{
+      "system": "http://terminology.hl7.org/CodeSystem/measure-improvement-notation",
+      "code": "increase",
+      "display": "Increased score indicates improvement"
+    }]
+  },
+  "group": [{
+    "id": "group-1",
+    "population": [
+      {
+        "id": "initial-population",
+        "code": {
+          "coding": [{
+            "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+            "code": "initial-population",
+            "display": "Initial Population"
+          }]
+        },
+        "description": "Women 51-74 years of age",
+        "criteria": {
+          "language": "text/cql",
+          "expression": "Initial Population"
+        }
+      },
+      {
+        "id": "denominator",
+        "code": {
+          "coding": [{
+            "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+            "code": "denominator",
+            "display": "Denominator"
+          }]
+        },
+        "description": "Initial Population with qualifying encounters",
+        "criteria": {
+          "language": "text/cql",
+          "expression": "Denominator"
+        }
+      },
+      {
+        "id": "denominator-exclusion",
+        "code": {
+          "coding": [{
+            "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+            "code": "denominator-exclusion",
+            "display": "Denominator Exclusion"
+          }]
+        },
+        "description": "Patients with bilateral mastectomy",
+        "criteria": {
+          "language": "text/cql",
+          "expression": "Denominator Exclusions"
+        }
+      },
+      {
+        "id": "numerator",
+        "code": {
+          "coding": [{
+            "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+            "code": "numerator",
+            "display": "Numerator"
+          }]
+        },
+        "description": "Patients with mammography in the past 27 months",
+        "criteria": {
+          "language": "text/cql",
+          "expression": "Numerator"
+        }
+      }
+    ]
+  }],
+  "supplementalData": [{
+    "id": "sde-ethnicity",
+    "code": {
+      "text": "Ethnicity"
+    },
+    "criteria": {
+      "language": "text/cql",
+      "expression": "SDE Ethnicity"
+    }
+  }]
+}

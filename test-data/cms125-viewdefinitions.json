@@ -1,0 +1,249 @@
+{
+  "resourceType": "Bundle",
+  "type": "transaction",
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:patient-view",
+      "resource": {
+        "resourceType": "Basic",
+        "id": "patient-view-definition",
+        "meta": {
+          "profile": ["http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/ViewDefinition"]
+        },
+        "extension": [{
+          "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/name",
+          "valueString": "patient"
+        }, {
+          "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/resource",
+          "valueCode": "Patient"
+        }, {
+          "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/select",
+          "extension": [
+            {
+              "url": "column",
+              "extension": [
+                { "url": "name", "valueString": "id" },
+                { "url": "path", "valueString": "id" },
+                { "url": "type", "valueCode": "string" }
+              ]
+            },
+            {
+              "url": "column",
+              "extension": [
+                { "url": "name", "valueString": "gender" },
+                { "url": "path", "valueString": "gender" },
+                { "url": "type", "valueCode": "string" }
+              ]
+            },
+            {
+              "url": "column",
+              "extension": [
+                { "url": "name", "valueString": "birthDate" },
+                { "url": "path", "valueString": "birthDate" },
+                { "url": "type", "valueCode": "date" }
+              ]
+            },
+            {
+              "url": "column",
+              "extension": [
+                { "url": "name", "valueString": "name_family" },
+                { "url": "path", "valueString": "name[0].family" },
+                { "url": "type", "valueCode": "string" }
+              ]
+            },
+            {
+              "url": "column",
+              "extension": [
+                { "url": "name", "valueString": "name_given" },
+                { "url": "path", "valueString": "name[0].given" },
+                { "url": "type", "valueCode": "string" },
+                { "url": "collection", "valueBoolean": true }
+              ]
+            },
+            {
+              "url": "column",
+              "extension": [
+                { "url": "name", "valueString": "active" },
+                { "url": "path", "valueString": "active" },
+                { "url": "type", "valueCode": "boolean" }
+              ]
+            }
+          ]
+        }],
+        "code": {
+          "coding": [{
+            "system": "http://hl7.org/fhir/uv/sql-on-fhir",
+            "code": "ViewDefinition"
+          }]
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Basic/patient-view-definition"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:encounter-view",
+      "resource": {
+        "resourceType": "Basic",
+        "id": "encounter-view-definition",
+        "meta": {
+          "profile": ["http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/ViewDefinition"]
+        },
+        "extension": [{
+          "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/name",
+          "valueString": "encounter"
+        }, {
+          "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/resource",
+          "valueCode": "Encounter"
+        }, {
+          "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/select",
+          "extension": [
+            {
+              "url": "column",
+              "extension": [
+                { "url": "name", "valueString": "id" },
+                { "url": "path", "valueString": "id" }
+              ]
+            },
+            {
+              "url": "column",
+              "extension": [
+                { "url": "name", "valueString": "patient_id" },
+                { "url": "path", "valueString": "subject.reference" }
+              ]
+            },
+            {
+              "url": "column",
+              "extension": [
+                { "url": "name", "valueString": "status" },
+                { "url": "path", "valueString": "status" }
+              ]
+            },
+            {
+              "url": "column",
+              "extension": [
+                { "url": "name", "valueString": "type_code" },
+                { "url": "path", "valueString": "type[0].coding[0].code" }
+              ]
+            },
+            {
+              "url": "column",
+              "extension": [
+                { "url": "name", "valueString": "type_display" },
+                { "url": "path", "valueString": "type[0].coding[0].display" }
+              ]
+            },
+            {
+              "url": "column",
+              "extension": [
+                { "url": "name", "valueString": "period_start" },
+                { "url": "path", "valueString": "period.start" },
+                { "url": "type", "valueCode": "dateTime" }
+              ]
+            },
+            {
+              "url": "column",
+              "extension": [
+                { "url": "name", "valueString": "period_end" },
+                { "url": "path", "valueString": "period.end" },
+                { "url": "type", "valueCode": "dateTime" }
+              ]
+            }
+          ]
+        }],
+        "code": {
+          "coding": [{
+            "system": "http://hl7.org/fhir/uv/sql-on-fhir",
+            "code": "ViewDefinition"
+          }]
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Basic/encounter-view-definition"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:observation-view",
+      "resource": {
+        "resourceType": "Basic",
+        "id": "observation-view-definition",
+        "meta": {
+          "profile": ["http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/ViewDefinition"]
+        },
+        "extension": [{
+          "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/name",
+          "valueString": "observation"
+        }, {
+          "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/resource",
+          "valueCode": "Observation"
+        }, {
+          "url": "http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/select",
+          "extension": [
+            {
+              "url": "column",
+              "extension": [
+                { "url": "name", "valueString": "id" },
+                { "url": "path", "valueString": "id" }
+              ]
+            },
+            {
+              "url": "column",
+              "extension": [
+                { "url": "name", "valueString": "patient_id" },
+                { "url": "path", "valueString": "subject.reference" }
+              ]
+            },
+            {
+              "url": "column",
+              "extension": [
+                { "url": "name", "valueString": "status" },
+                { "url": "path", "valueString": "status" }
+              ]
+            },
+            {
+              "url": "column",
+              "extension": [
+                { "url": "name", "valueString": "code_system" },
+                { "url": "path", "valueString": "code.coding[0].system" }
+              ]
+            },
+            {
+              "url": "column",
+              "extension": [
+                { "url": "name", "valueString": "code_code" },
+                { "url": "path", "valueString": "code.coding[0].code" }
+              ]
+            },
+            {
+              "url": "column",
+              "extension": [
+                { "url": "name", "valueString": "code_display" },
+                { "url": "path", "valueString": "code.coding[0].display" }
+              ]
+            },
+            {
+              "url": "column",
+              "extension": [
+                { "url": "name", "valueString": "effective_datetime" },
+                { "url": "path", "valueString": "effectiveDateTime" },
+                { "url": "type", "valueCode": "dateTime" }
+              ]
+            }
+          ]
+        }],
+        "code": {
+          "coding": [{
+            "system": "http://hl7.org/fhir/uv/sql-on-fhir",
+            "code": "ViewDefinition"
+          }]
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Basic/observation-view-definition"
+      }
+    }
+  ]
+}
