@@ -11,9 +11,6 @@ import CQLFunctions from "@/pages/cql-functions";
 import E2EDemo from "@/pages/e2e-demo";
 import E2EConfig from "@/pages/e2e-config";
 import WhatsNext from "@/pages/whats-next";
-import EarlyAccess from "@/pages/early-access";
-import Investor from "@/pages/investor";
-import Differentiation from "@/pages/differentiation";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -27,9 +24,6 @@ function Router() {
       <Route path="/e2e-demo" component={E2EDemo} />
       <Route path="/e2e-config" component={E2EConfig} />
       <Route path="/whats-next" component={WhatsNext} />
-      <Route path="/early-access" component={EarlyAccess} />
-      <Route path="/investor" component={Investor} />
-      <Route path="/differentiation" component={Differentiation} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -8,8 +8,7 @@ import {
   Database,
   Handshake,
   BookOpen,
-  ArrowRight,
-  Mail
+  ExternalLink
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -173,35 +172,19 @@ export default function WhatsNext() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/early-access">
+            <a
+              href="https://fhiriq.com/investor"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <Button
                 size="lg"
                 className="bg-[#4C83FF] hover:bg-[#3A6FFF] text-white rounded-xl px-8 h-12 font-medium"
               >
-                <Mail className="w-4 h-4 mr-2" />
-                Join Early Access
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Learn More at FHIR IQ
               </Button>
-            </Link>
-            <Link href="/investor">
-              <Button
-                size="lg"
-                variant="outline"
-                className="rounded-xl px-8 h-12 font-medium border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
-              >
-                <FileText className="w-4 h-4 mr-2" />
-                View Investor One-Pager
-              </Button>
-            </Link>
-            <Link href="/differentiation">
-              <Button
-                size="lg"
-                variant="outline"
-                className="rounded-xl px-8 h-12 font-medium border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
-              >
-                <ArrowRight className="w-4 h-4 mr-2" />
-                See Differentiation Matrix
-              </Button>
-            </Link>
+            </a>
           </div>
         </div>
       </section>
