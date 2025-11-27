@@ -150,15 +150,15 @@ export default function Home() {
                   End-to-End Demo
                 </Button>
               </Link>
-              <Link href="/demo">
+              <Link href="/whats-next">
                 <Button
                   variant="outline"
                   size="sm"
                   className="flex items-center gap-2 border-green-600 text-green-600 hover:bg-green-50"
-                  data-testid="button-demo"
+                  data-testid="button-learn-more"
                 >
                   <Zap className="w-4 h-4" />
-                  Quick Demo
+                  Learn More
                 </Button>
               </Link>
               <Link href="/ai">

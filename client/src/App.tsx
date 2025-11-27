@@ -10,6 +10,7 @@ import AI from "@/pages/ai";
 import CQLFunctions from "@/pages/cql-functions";
 import E2EDemo from "@/pages/e2e-demo";
 import E2EConfig from "@/pages/e2e-config";
+import WhatsNext from "@/pages/whats-next";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -22,6 +23,7 @@ function Router() {
       <Route path="/cql-functions" component={CQLFunctions} />
       <Route path="/e2e-demo" component={E2EDemo} />
       <Route path="/e2e-config" component={E2EConfig} />
+      <Route path="/whats-next" component={WhatsNext} />
       <Route component={NotFound} />
     </Switch>
   );
