@@ -59,12 +59,17 @@ interface E2EConfig {
     catalog: string;
     schema: string;
   };
+  firemetrics: {
+    apiKey: string;
+    mcpUrl: string;
+  };
   execution: {
     patientIds: string[];
     measureIds: string[];
     libraryIds: string[];
     periodStart: string;
     periodEnd: string;
+    dataSource: 'databricks' | 'firemetrics';
   };
 }
 
@@ -90,12 +95,17 @@ const DEFAULT_CONFIG: E2EConfig = {
     catalog: "fhir_analytics",
     schema: "bronze"
   },
+  firemetrics: {
+    apiKey: "",
+    mcpUrl: "https://mcp.firemetrics.ai/mcp"
+  },
   execution: {
     patientIds: [],
     measureIds: ["CMS125"],
     libraryIds: ["BCSComponent"],
     periodStart: "2024-01-01",
-    periodEnd: "2024-12-31"
+    periodEnd: "2024-12-31",
+    dataSource: "databricks"
   }
 };
 
@@ -107,17 +117,20 @@ export default function E2EConfig() {
   const [testResults, setTestResults] = useState<Record<string, boolean | null>>({
     medplum: null,
     vsac: null,
-    databricks: null
+    databricks: null,
+    firemetrics: null
   });
   const [testing, setTesting] = useState<Record<string, boolean>>({
     medplum: false,
     vsac: false,
-    databricks: false
+    databricks: false,
+    firemetrics: false
   });
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({
     medplumSecret: false,
     vsacApiKey: false,
-    databricksToken: false
+    databricksToken: false,
+    firemetricsApiKey: false
   });
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
 
@@ -209,6 +222,49 @@ export default function E2EConfig() {
       setTestResults({ ...testResults, databricks: false });
     } finally {
       setTesting({ ...testing, databricks: false });
+    }
+  };
+
+  // Test Firemetrics connection
+  const testFiremetrics = async () => {
+    setTesting({ ...testing, firemetrics: true });
+    setTestResults({ ...testResults, firemetrics: null });
+
+    try {
+      // Real implementation - test MCP connection
+      const response = await fetch(config.firemetrics.mcpUrl, {
+        method: 'POST',
+        headers: {
+          'X-API-Key': config.firemetrics.apiKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'initialize',
+          params: {
+            protocolVersion: '2024-11-05',
+            capabilities: {},
+            clientInfo: { name: 'fhir-query-converter', version: '1.0.0' }
+          }
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.result?.serverInfo) {
+          setTestResults({ ...testResults, firemetrics: true });
+        } else {
+          setTestResults({ ...testResults, firemetrics: false });
+        }
+      } else {
+        setTestResults({ ...testResults, firemetrics: false });
+      }
+    } catch (error) {
+      console.error('Firemetrics connection error:', error);
+      setTestResults({ ...testResults, firemetrics: false });
+    } finally {
+      setTesting({ ...testing, firemetrics: false });
     }
   };
 
@@ -330,7 +386,7 @@ export default function E2EConfig() {
       </div>
 
       <Tabs defaultValue="medplum" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="medplum" className="flex items-center gap-2">
             <Server className="w-4 h-4" />
             Medplum
@@ -345,6 +401,11 @@ export default function E2EConfig() {
             <Database className="w-4 h-4" />
             Databricks
             {getTestStatusIcon("databricks")}
+          </TabsTrigger>
+          <TabsTrigger value="firemetrics" className="flex items-center gap-2">
+            <Database className="w-4 h-4" />
+            Firemetrics
+            {getTestStatusIcon("firemetrics")}
           </TabsTrigger>
           <TabsTrigger value="execution" className="flex items-center gap-2">
             <FileCode className="w-4 h-4" />
@@ -736,6 +797,121 @@ export default function E2EConfig() {
           </Card>
         </TabsContent>
 
+        {/* Firemetrics Configuration */}
+        <TabsContent value="firemetrics" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Database className="w-5 h-5" />
+                Firemetrics SQL on FHIR
+              </CardTitle>
+              <CardDescription>
+                Configure connection to Firemetrics for native FHIR SQL analytics
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Alert className="bg-blue-50 border-blue-200">
+                <AlertCircle className="h-4 w-4 text-blue-600" />
+                <AlertTitle className="text-blue-900">What is Firemetrics?</AlertTitle>
+                <AlertDescription className="text-blue-800">
+                  Firemetrics provides a native FHIR R4 database with SQL access. Unlike Databricks which requires
+                  flattening FHIR data into tables, Firemetrics maintains the FHIR structure and auto-generates
+                  optimized SQL queries using its fhir_path_joiner tool.
+                </AlertDescription>
+              </Alert>
+
+              <div className="space-y-4">
+                <div className="col-span-2">
+                  <Label htmlFor="firemetrics-url">MCP Endpoint URL</Label>
+                  <Input
+                    id="firemetrics-url"
+                    value={config.firemetrics.mcpUrl}
+                    onChange={(e) => updateConfig("firemetrics", "mcpUrl", e.target.value)}
+                    placeholder="https://mcp.firemetrics.ai/mcp"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Firemetrics MCP (Model Context Protocol) endpoint for AI integration
+                  </p>
+                </div>
+
+                <div className="col-span-2">
+                  <Label htmlFor="firemetrics-apikey">API Key</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="firemetrics-apikey"
+                      type={showSecrets.firemetricsApiKey ? "text" : "password"}
+                      value={config.firemetrics.apiKey}
+                      onChange={(e) => updateConfig("firemetrics", "apiKey", e.target.value)}
+                      placeholder="sk_prod_..."
+                      className="flex-1"
+                    />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setShowSecrets({ ...showSecrets, firemetricsApiKey: !showSecrets.firemetricsApiKey })}
+                    >
+                      {showSecrets.firemetricsApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Your Firemetrics API key for authentication
+                  </p>
+                </div>
+              </div>
+
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Firemetrics Features</AlertTitle>
+                <AlertDescription>
+                  <ul className="list-disc list-inside space-y-1 mt-2 text-sm">
+                    <li><strong>fhir_path_joiner:</strong> Auto-generates SQL with JOINs from FHIR paths</li>
+                    <li><strong>LOINC/SNOMED search:</strong> Built-in terminology lookups</li>
+                    <li><strong>ValueSet search:</strong> Query FHIR ValueSets directly</li>
+                    <li><strong>Native FHIR R4:</strong> No manual flattening required</li>
+                    <li><strong>MCP Integration:</strong> Works with Claude and other AI assistants</li>
+                  </ul>
+                </AlertDescription>
+              </Alert>
+
+              <div className="flex gap-2">
+                <Button
+                  onClick={testFiremetrics}
+                  disabled={!config.firemetrics.apiKey || testing.firemetrics}
+                  className="flex items-center gap-2"
+                >
+                  {testing.firemetrics ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Testing...
+                    </>
+                  ) : (
+                    <>
+                      <TestTube className="w-4 h-4" />
+                      Test Connection
+                    </>
+                  )}
+                </Button>
+
+                {testResults.firemetrics !== null && (
+                  <Badge variant={testResults.firemetrics ? "default" : "destructive"} className="flex items-center gap-1">
+                    {testResults.firemetrics ? (
+                      <>
+                        <CheckCircle2 className="w-3 h-3" />
+                        Connected
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="w-3 h-3" />
+                        Connection Failed
+                      </>
+                    )}
+                  </Badge>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* Execution Configuration */}
         <TabsContent value="execution" className="space-y-6">
           <Card>
@@ -749,6 +925,50 @@ export default function E2EConfig() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Data Source Selection */}
+              <div className="space-y-3">
+                <Label>SQL on FHIR Data Source</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div
+                    className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                      config.execution.dataSource === 'databricks'
+                        ? 'border-blue-600 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    onClick={() => updateConfig("execution", "dataSource", "databricks")}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <Database className="w-5 h-5" />
+                      <span className="font-semibold">Databricks</span>
+                      {testResults.databricks === true && <CheckCircle2 className="w-4 h-4 text-green-600" />}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Large-scale analytics with flattened FHIR tables
+                    </p>
+                  </div>
+                  <div
+                    className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                      config.execution.dataSource === 'firemetrics'
+                        ? 'border-blue-600 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    onClick={() => updateConfig("execution", "dataSource", "firemetrics")}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <Database className="w-5 h-5" />
+                      <span className="font-semibold">Firemetrics</span>
+                      {testResults.firemetrics === true && <CheckCircle2 className="w-4 h-4 text-green-600" />}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Native FHIR R4 with auto-generated SQL
+                    </p>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Select which platform to use for SQL on FHIR measure evaluation
+                </p>
+              </div>
+
               <div className="space-y-3">
                 <Label>Patient IDs to Evaluate</Label>
                 <Textarea

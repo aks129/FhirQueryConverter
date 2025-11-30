@@ -6,3 +6,10 @@ vite.config.ts.*
 *.tar.gz
 .vercel
 .claude/settings.local.json
+.mcp.json
+
+# Environment files with secrets
+.env
+.env.*
+*.env
+mcp-servers/.env

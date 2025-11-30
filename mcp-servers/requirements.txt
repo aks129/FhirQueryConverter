@@ -1,0 +1,14 @@
+# MCP Server Dependencies
+
+# MCP Protocol
+mcp>=1.0.0
+
+# Data Platform Connectors
+databricks-sql-connector>=3.0.0
+psycopg2-binary>=2.9.0
+
+# Action/Notification
+twilio>=9.0.0
+
+# Utilities
+python-dotenv>=1.0.0
