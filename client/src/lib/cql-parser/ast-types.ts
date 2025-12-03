@@ -141,7 +141,13 @@ export type BinaryOperator =
   // Temporal
   | 'during' | 'before' | 'after' | 'overlaps'
   | 'starts' | 'ends' | 'occurs'
-  | 'on or before' | 'on or after';
+  | 'on or before' | 'on or after'
+  // Temporal with duration
+  | 'days or less before' | 'days or less after'
+  | 'months or less before' | 'months or less after'
+  | 'years or less before' | 'years or less after'
+  // Set operations
+  | 'union' | 'except' | 'intersect';
 
 /**
  * Unary expression: not a, exists a

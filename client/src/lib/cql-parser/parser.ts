@@ -73,10 +73,25 @@ export class CqlParser {
       library.includes.push({ library: libraryName, version, alias });
     }
 
+    // Skip codesystem declarations
+    while (this.match(TokenType.CODESYSTEM)) {
+      this.skipUntilNextStatement();
+    }
+
+    // Skip valueset declarations
+    while (this.match(TokenType.VALUESET)) {
+      this.skipUntilNextStatement();
+    }
+
     // Parse parameters
     library.parameters = [];
     while (this.match(TokenType.PARAMETER)) {
       library.parameters.push(this.parseParameter());
+    }
+
+    // Skip context statement (e.g., "context Patient")
+    if (this.match(TokenType.CONTEXT)) {
+      this.advance(); // skip the identifier (Patient)
     }
 
     // Parse define statements
@@ -117,7 +132,30 @@ export class CqlParser {
   }
 
   private parseExpression(): CqlExpressionNode {
-    return this.parseLogicalOr();
+    return this.parseSetOperations();
+  }
+
+  private parseSetOperations(): CqlExpressionNode {
+    let left = this.parseLogicalOr();
+
+    while (this.matchAny(TokenType.UNION, TokenType.EXCEPT, TokenType.INTERSECT)) {
+      const token = this.previous();
+      const operatorMap: { [key: string]: 'union' | 'except' | 'intersect' } = {
+        [TokenType.UNION]: 'union',
+        [TokenType.EXCEPT]: 'except',
+        [TokenType.INTERSECT]: 'intersect',
+      };
+      const operator = operatorMap[token.type];
+      const right = this.parseLogicalOr();
+      left = {
+        type: 'BinaryExpression',
+        operator,
+        left,
+        right,
+      };
+    }
+
+    return left;
   }
 
   private parseLogicalOr(): CqlExpressionNode {
@@ -195,6 +233,42 @@ export class CqlParser {
 
   private parseTemporal(): CqlExpressionNode {
     let left = this.parseAdditive();
+
+    // Handle "on or before/after" patterns
+    if (this.match(TokenType.ON)) {
+      this.expect(TokenType.OR);
+      if (this.matchAny(TokenType.BEFORE, TokenType.AFTER)) {
+        const direction = this.previous().value.toLowerCase();
+        const right = this.parseAdditive();
+        const operator = direction === 'before' ? 'on or before' : 'on or after';
+        return {
+          type: 'BinaryExpression',
+          operator: operator as 'on or before' | 'on or after',
+          left,
+          right,
+        };
+      }
+    }
+
+    // Handle "N days or less after" patterns
+    if (this.check(TokenType.DAYS) || this.check(TokenType.MONTHS) || this.check(TokenType.YEARS)) {
+      const unit = this.advance().value.toLowerCase();
+      if (this.match(TokenType.OR)) {
+        this.expect(TokenType.LESS);
+        if (this.matchAny(TokenType.BEFORE, TokenType.AFTER)) {
+          const direction = this.previous().value.toLowerCase();
+          const right = this.parseAdditive();
+          // Build the operator string matching the BinaryOperator type
+          const operator = `${unit} or less ${direction}` as 'days or less before' | 'days or less after' | 'months or less before' | 'months or less after' | 'years or less before' | 'years or less after';
+          return {
+            type: 'BinaryExpression',
+            operator,
+            left,
+            right,
+          };
+        }
+      }
+    }
 
     const temporalOps = [
       TokenType.DURING,
@@ -437,6 +511,30 @@ export class CqlParser {
       };
     }
 
+    // First/Last functions (aggregate)
+    if (this.matchAny(TokenType.FIRST, TokenType.LAST)) {
+      const funcName = this.previous().value; // 'First' or 'Last'
+      this.expect(TokenType.LEFT_PAREN);
+      const expr = this.parseExpression();
+
+      // Check for sort by clause inside First/Last
+      if (this.match(TokenType.SORT)) {
+        this.expect(TokenType.BY);
+        // Skip the sort expression for now
+        while (!this.check(TokenType.RIGHT_PAREN) && !this.isAtEnd()) {
+          this.advance();
+        }
+      }
+
+      this.expect(TokenType.RIGHT_PAREN);
+
+      return {
+        type: 'FunctionCall',
+        name: funcName,
+        arguments: [expr],
+      };
+    }
+
     // Identifier or query
     if (this.match(TokenType.IDENTIFIER)) {
       const name = this.previous().value;
@@ -574,6 +672,21 @@ export class CqlParser {
       startInclusive,
       endInclusive,
     };
+  }
+
+  // Skip tokens until we hit the next major statement keyword
+  private skipUntilNextStatement(): void {
+    while (!this.isAtEnd() &&
+           !this.checkAny(
+             TokenType.DEFINE,
+             TokenType.PARAMETER,
+             TokenType.CODESYSTEM,
+             TokenType.VALUESET,
+             TokenType.CONTEXT,
+             TokenType.LIBRARY
+           )) {
+      this.advance();
+    }
   }
 
   // Helper methods

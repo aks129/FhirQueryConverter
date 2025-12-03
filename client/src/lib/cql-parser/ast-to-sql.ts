@@ -584,6 +584,35 @@ DiagnosticReport_view AS (
         // This is complex and may need interval unpacking
         return `${left} ${operator} ${right}`;
 
+      // Set operations
+      case 'union':
+        return `${left} UNION ${right}`;
+
+      case 'except':
+        return `${left} EXCEPT ${right}`;
+
+      case 'intersect':
+        return `${left} INTERSECT ${right}`;
+
+      // Duration temporal operators
+      case 'days or less before':
+        return `${left} >= DATE(${right}, '-30 days') AND ${left} <= ${right}`;
+
+      case 'days or less after':
+        return `${left} >= ${right} AND ${left} <= DATE(${right}, '+30 days')`;
+
+      case 'months or less before':
+        return `${left} >= DATE(${right}, '-12 months') AND ${left} <= ${right}`;
+
+      case 'months or less after':
+        return `${left} >= ${right} AND ${left} <= DATE(${right}, '+12 months')`;
+
+      case 'years or less before':
+        return `${left} >= DATE(${right}, '-5 years') AND ${left} <= ${right}`;
+
+      case 'years or less after':
+        return `${left} >= ${right} AND ${left} <= DATE(${right}, '+5 years')`;
+
       default:
         return `${left} ${operator} ${right}`;
     }
