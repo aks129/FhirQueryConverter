@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Trash2 } from "lucide-react";
+import { CheckCircle, Trash2, Library } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { FhirLibraryLoader } from "./fhir-library-loader";
 
 interface CqlInputProps {
   value: string;
@@ -12,6 +13,7 @@ interface CqlInputProps {
 
 export function CqlInput({ value, onChange, onValidate }: CqlInputProps) {
   const [isValidating, setIsValidating] = useState(false);
+  const [loadedLibraryName, setLoadedLibraryName] = useState<string | null>(null);
   const { toast } = useToast();
 
   const validateCql = async () => {
@@ -58,20 +60,36 @@ export function CqlInput({ value, onChange, onValidate }: CqlInputProps) {
 
   const clearCql = () => {
     onChange("");
+    setLoadedLibraryName(null);
     toast({
       title: "CQL Cleared",
       description: "CQL input has been cleared",
     });
   };
 
+  const handleCqlLoaded = (cql: string, libraryName: string) => {
+    onChange(cql);
+    setLoadedLibraryName(libraryName);
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 h-1/2">
       <div className="px-6 py-4 border-b border-gray-200">
-        <h2 className="text-lg font-medium text-gray-900 flex items-center">
-          <i className="fas fa-code text-blue-600 mr-2"></i>
-          CQL Input
-        </h2>
-        <p className="text-sm text-gray-600 mt-1">Enter your Clinical Quality Language code</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-medium text-gray-900 flex items-center">
+              <i className="fas fa-code text-blue-600 mr-2"></i>
+              CQL Input
+            </h2>
+            <p className="text-sm text-gray-600 mt-1">
+              {loadedLibraryName
+                ? <>Loaded: <span className="font-medium text-blue-600">{loadedLibraryName}</span></>
+                : "Enter CQL or load from FHIR server"
+              }
+            </p>
+          </div>
+          <FhirLibraryLoader onCqlLoaded={handleCqlLoaded} />
+        </div>
       </div>
       <div className="p-6 h-full">
         <div className="h-full">

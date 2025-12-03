@@ -7,7 +7,7 @@ import { useCqlEvaluation } from "@/hooks/use-cql-evaluation";
 import { useSqlEvaluation } from "@/hooks/use-sql-evaluation";
 import { FhirBundle } from "@/types/fhir";
 import { sampleCqlCode, diabetesCareBundle } from "@/lib/sample-data";
-import { Play, ServerCog, Stethoscope, Zap, HelpCircle, Bot } from "lucide-react";
+import { Play, ServerCog, Stethoscope, Zap, HelpCircle, Bot, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 
@@ -123,71 +123,53 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
-      {/* Header */}
+      {/* Header - Simplified */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
+          <div className="flex justify-between items-center py-3">
             <div className="flex items-center space-x-3">
-              <Stethoscope className="text-blue-600 text-2xl" />
+              <Stethoscope className="w-8 h-8 text-blue-600" />
               <div>
-                <h1 className="text-xl font-semibold text-gray-900">
-                  FHIR HL7 CQL to SQL on FHIR Converter
+                <h1 className="text-lg font-semibold text-gray-900">
+                  CQL to SQL on FHIR
                 </h1>
-                <p className="text-sm text-gray-600">
-                  Clinical Quality Language Evaluation & Conversion Tool
+                <p className="text-xs text-gray-500">
+                  Convert clinical quality measures to executable SQL
                 </p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
+            <nav className="flex items-center space-x-2">
               <Link href="/e2e-demo">
                 <Button
                   variant="default"
                   size="sm"
-                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+                  className="bg-blue-600 hover:bg-blue-700"
                   data-testid="button-e2e"
                 >
-                  <Zap className="w-4 h-4" />
-                  End-to-End Demo
-                </Button>
-              </Link>
-              <Link href="/whats-next">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2 border-green-600 text-green-600 hover:bg-green-50"
-                  data-testid="button-learn-more"
-                >
-                  <Zap className="w-4 h-4" />
-                  Learn More
+                  <Zap className="w-4 h-4 mr-1" />
+                  E2E Demo
                 </Button>
               </Link>
               <Link href="/ai">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex items-center gap-2 border-purple-600 text-purple-600 hover:bg-purple-50"
                   data-testid="button-ai"
                 >
-                  <Bot className="w-4 h-4" />
-                  AI Agents
+                  <Bot className="w-4 h-4 mr-1" />
+                  AI
                 </Button>
               </Link>
               <Link href="/faq">
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  className="flex items-center gap-2"
                   data-testid="button-faq"
                 >
                   <HelpCircle className="w-4 h-4" />
-                  FAQ & Architecture
                 </Button>
               </Link>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-                <span className="text-sm text-gray-600">System Ready</span>
-              </div>
-            </div>
+            </nav>
           </div>
         </div>
       </header>
@@ -211,41 +193,49 @@ export default function Home() {
                 onBundleChange={setFhirBundle}
               />
 
-              {/* Quick Demo Button */}
-              <div className="mb-4">
+              {/* Quick Start */}
+              <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-4 border border-purple-200">
                 <Button
                   onClick={runSampleExample}
                   disabled={cqlLoading || sqlLoading}
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 border-2 border-purple-400"
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3"
                 >
                   <Zap className="w-4 h-4 mr-2" />
-                  {(cqlLoading || sqlLoading) ? "Running Example..." : "Use Sample & Run Example"}
+                  {(cqlLoading || sqlLoading) ? "Running..." : "Quick Start Demo"}
                 </Button>
                 <p className="text-xs text-gray-600 mt-2 text-center">
-                  Automatically loads sample data and runs both evaluation methods
+                  Load sample CQL + FHIR data, run both evaluations
                 </p>
               </div>
 
-              {/* Execution Buttons */}
-              <div className="space-y-3">
+              {/* Evaluation Buttons */}
+              <div className="grid grid-cols-2 gap-3">
                 <Button
                   onClick={handleCqlEvaluation}
                   disabled={cqlLoading || !cqlCode.trim() || !fhirBundle}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3"
+                  variant="outline"
+                  className="border-blue-300 text-blue-700 hover:bg-blue-50"
                 >
-                  <Play className="w-4 h-4 mr-2" />
-                  {cqlLoading ? "Evaluating..." : "Evaluate with CQL"}
+                  <Play className="w-4 h-4 mr-1" />
+                  {cqlLoading ? "..." : "Run CQL"}
                 </Button>
-                
+
                 <Button
                   onClick={handleSqlEvaluation}
                   disabled={sqlLoading || !cqlCode.trim() || !fhirBundle}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3"
+                  variant="outline"
+                  className="border-green-300 text-green-700 hover:bg-green-50"
                 >
-                  <ServerCog className="w-4 h-4 mr-2" />
-                  {sqlLoading ? "Converting..." : "Convert and Evaluate with SQL on FHIR"}
+                  <ArrowRight className="w-4 h-4 mr-1" />
+                  {sqlLoading ? "..." : "CQL to SQL"}
                 </Button>
               </div>
+
+              {!fhirBundle && cqlCode.trim() && (
+                <p className="text-xs text-amber-600 text-center">
+                  Load FHIR data to enable evaluation
+                </p>
+              )}
             </div>
           </div>
 
@@ -262,21 +252,12 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 mt-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center text-sm text-gray-600">
-            <div className="flex items-center space-x-4">
-              <span>FHIR HL7 CQL to SQL Converter v1.0.0</span>
-              <span>•</span>
-              <span>Supports CQL 1.5 & FHIR R4</span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <a href="#" className="hover:text-blue-600">Documentation</a>
-              <a href="#" className="hover:text-blue-600">GitHub</a>
-              <a href="#" className="hover:text-blue-600">Support</a>
-            </div>
-          </div>
+      {/* Footer - Minimal */}
+      <footer className="border-t border-gray-200 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <p className="text-xs text-gray-400 text-center">
+            CQL 1.5 + FHIR R4 | Open Quality
+          </p>
         </div>
       </footer>
     </div>
