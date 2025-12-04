@@ -787,10 +787,52 @@ DiagnosticReport_view AS (
   private generateWhereExpression(expr: CqlExpressionNode, alias: string): string {
     if (expr.type === 'MemberAccess') {
       const obj = (expr.object.type === 'Identifier') ? alias : this.generateExpression(expr.object);
-      return `${obj}.${expr.member}`;
+      // Apply column mapping for FHIR property names
+      const columnName = this.mapFhirPropertyToSql(expr.member);
+      return `${obj}.${columnName}`;
     }
 
     return this.generateExpression(expr);
+  }
+
+  /**
+   * Map FHIR property names (camelCase) to SQL column names (snake_case)
+   * Centralized mapping used by both generateMemberAccess and generateWhereExpression
+   */
+  private mapFhirPropertyToSql(member: string): string {
+    const columnMapping: { [key: string]: string } = {
+      // Common FHIR element mappings
+      'effective': 'effective_datetime',
+      'effectiveDateTime': 'effective_datetime',
+      'value': 'value_quantity',
+      'valueQuantity': 'value_quantity',
+      'code': 'code_text',
+      'onset': 'onset_datetime',
+      'onsetDateTime': 'onset_datetime',
+      'performed': 'performed_datetime',
+      'performedDateTime': 'performed_datetime',
+      'performedPeriod': 'performed_datetime',
+      'medication': 'medication_text',
+      'medicationCodeableConcept': 'medication_text',
+      'class': 'class_code',
+      'type': 'type_text',
+      // Status fields
+      'clinicalStatus': 'clinical_status',
+      'verificationStatus': 'verification_status',
+      // Date fields
+      'authoredOn': 'authored_on',
+      'issued': 'issued',
+      'birthDate': 'birthDate',
+      // Period fields
+      'period': 'period_start',
+      'periodStart': 'period_start',
+      'periodEnd': 'period_end',
+      // Subject reference
+      'subject': 'subject_id',
+      'subjectId': 'subject_id',
+    };
+
+    return columnMapping[member] || member;
   }
 
   private generateBinaryExpression(expr: BinaryExpressionNode): string {
@@ -921,19 +963,8 @@ DiagnosticReport_view AS (
       ? (expr.object as IdentifierNode).name[0].toLowerCase()
       : this.generateExpression(expr.object);
 
-    // Map CQL property names to SQL column names
-    const columnMapping: { [key: string]: string } = {
-      'effective': 'effective_datetime',
-      'value': 'value_quantity',
-      'code': 'code_text',
-      'onset': 'onset_datetime',
-      'performed': 'performed_datetime',
-      'medication': 'medication_text',
-      'class': 'class_code',
-      'type': 'type_text',
-    };
-
-    const columnName = columnMapping[expr.member] || expr.member;
+    // Use centralized column mapping
+    const columnName = this.mapFhirPropertyToSql(expr.member);
     return `${object}.${columnName}`;
   }
 
