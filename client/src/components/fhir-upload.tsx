@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Upload, FolderOpen, X, Download } from "lucide-react";
+import { Upload, FolderOpen, X, Download, FileJson, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { FhirBundle } from "@/types/fhir";
 import { validateFhirBundle, getBundleStats } from "@/lib/fhir-utils";
@@ -89,21 +89,25 @@ export function FhirUpload({ bundle, onBundleChange }: FhirUploadProps) {
   const stats = bundle ? getBundleStats(bundle) : null;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 h-1/2">
-      <div className="px-6 py-4 border-b border-gray-200">
-        <h2 className="text-lg font-medium text-gray-900 flex items-center">
-          <Upload className="w-5 h-5 text-blue-600 mr-2" />
-          FHIR Data Bundle
-        </h2>
-        <p className="text-sm text-gray-600 mt-1">Upload or load sample FHIR resources</p>
+    <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col" style={{ height: '45%' }}>
+      <div className="px-5 py-3 border-b border-slate-200 bg-slate-50/50 rounded-t-xl">
+        <div className="flex items-center space-x-3">
+          <div className="flex items-center justify-center w-8 h-8 bg-emerald-100 rounded-lg">
+            <FileJson className="w-4 h-4 text-emerald-600" />
+          </div>
+          <div>
+            <h2 className="text-base font-semibold text-slate-900">FHIR Data</h2>
+            <p className="text-xs text-slate-500">Upload or load sample resources</p>
+          </div>
+        </div>
       </div>
-      <div className="p-6">
+      <div className="p-4 flex-1 overflow-auto">
         {!bundle ? (
           <div
-            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-              isDragOver 
-                ? 'border-blue-600 bg-blue-50' 
-                : 'border-gray-300 hover:border-blue-600'
+            className={`border-2 border-dashed rounded-lg p-6 text-center transition-all ${
+              isDragOver
+                ? 'border-blue-500 bg-blue-50'
+                : 'border-slate-200 hover:border-blue-400 hover:bg-slate-50'
             }`}
             onDrop={handleDrop}
             onDragOver={(e) => {
@@ -112,9 +116,9 @@ export function FhirUpload({ bundle, onBundleChange }: FhirUploadProps) {
             }}
             onDragLeave={() => setIsDragOver(false)}
           >
-            <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-lg font-medium text-gray-900 mb-2">Drop FHIR Bundle Here</p>
-            <p className="text-sm text-gray-600 mb-4">or click to browse files</p>
+            <Upload className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+            <p className="text-sm font-medium text-slate-700 mb-1">Drop FHIR Bundle Here</p>
+            <p className="text-xs text-slate-500 mb-3">or click to browse</p>
             <input
               ref={fileInputRef}
               type="file"
@@ -124,6 +128,7 @@ export function FhirUpload({ bundle, onBundleChange }: FhirUploadProps) {
             />
             <Button
               onClick={() => fileInputRef.current?.click()}
+              size="sm"
               className="bg-blue-600 hover:bg-blue-700"
             >
               <FolderOpen className="w-4 h-4 mr-2" />
@@ -131,49 +136,49 @@ export function FhirUpload({ bundle, onBundleChange }: FhirUploadProps) {
             </Button>
           </div>
         ) : (
-          <Card className="p-3 bg-green-50 border border-green-200">
+          <Card className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <i className="fas fa-file-alt text-green-600"></i>
-                <span className="text-sm font-medium text-green-600">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <span className="text-sm font-medium text-emerald-700">
                   {bundle.id || 'fhir-bundle.json'}
                 </span>
-                <span className="text-xs text-gray-600">({stats?.sizeKB} KB)</span>
+                <span className="text-xs text-slate-500">({stats?.sizeKB} KB)</span>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={removeBundle}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-slate-400 hover:text-slate-600 h-7 w-7 p-0"
               >
                 <X className="w-4 h-4" />
               </Button>
             </div>
             {stats && (
-              <p className="text-xs text-gray-600 mt-1">
-                ✓ Valid FHIR Bundle - {stats.patients} patients, {stats.observations} observations, {stats.conditions} conditions
+              <p className="text-xs text-slate-600 mt-2">
+                {stats.patients} patients, {stats.observations} observations, {stats.conditions} conditions
               </p>
             )}
           </Card>
         )}
 
         {/* Sample Data Options */}
-        <div className="mt-6">
-          <h3 className="text-sm font-medium text-gray-900 mb-3">Sample Data Sets</h3>
+        <div className="mt-4">
+          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Sample Data</h3>
           <div className="space-y-2">
             {sampleDatasets.map((dataset) => (
               <Button
                 key={dataset.id}
                 variant="outline"
-                className="w-full text-left p-3 h-auto justify-start"
+                className="w-full text-left p-2.5 h-auto justify-start border-slate-200 hover:bg-slate-50"
                 onClick={() => loadSampleData(dataset.id)}
               >
                 <div className="flex items-center justify-between w-full">
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{dataset.name}</p>
-                    <p className="text-xs text-gray-600">{dataset.description}</p>
+                    <p className="text-sm font-medium text-slate-800">{dataset.name}</p>
+                    <p className="text-xs text-slate-500">{dataset.description}</p>
                   </div>
-                  <Download className="w-4 h-4 text-gray-400" />
+                  <Download className="w-4 h-4 text-slate-400" />
                 </div>
               </Button>
             ))}

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Trash2, Library } from "lucide-react";
+import { CheckCircle, Trash2, Code, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { FhirLibraryLoader } from "./fhir-library-loader";
 
@@ -73,38 +73,40 @@ export function CqlInput({ value, onChange, onValidate }: CqlInputProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 h-1/2">
-      <div className="px-6 py-4 border-b border-gray-200">
+    <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col" style={{ height: '45%' }}>
+      <div className="px-5 py-3 border-b border-slate-200 bg-slate-50/50 rounded-t-xl">
         <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-medium text-gray-900 flex items-center">
-              <i className="fas fa-code text-blue-600 mr-2"></i>
-              CQL Input
-            </h2>
-            <p className="text-sm text-gray-600 mt-1">
-              {loadedLibraryName
-                ? <>Loaded: <span className="font-medium text-blue-600">{loadedLibraryName}</span></>
-                : "Enter CQL or load from FHIR server"
-              }
-            </p>
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-lg">
+              <Code className="w-4 h-4 text-blue-600" />
+            </div>
+            <div>
+              <h2 className="text-base font-semibold text-slate-900">
+                CQL Input
+              </h2>
+              <p className="text-xs text-slate-500">
+                {loadedLibraryName
+                  ? <>Loaded: <span className="font-medium text-blue-600">{loadedLibraryName}</span></>
+                  : "Enter CQL or load from FHIR server"
+                }
+              </p>
+            </div>
           </div>
           <FhirLibraryLoader onCqlLoaded={handleCqlLoaded} />
         </div>
       </div>
-      <div className="p-6 h-full">
-        <div className="h-full">
-          <Textarea
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className="w-full h-5/6 p-4 font-mono text-sm resize-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
-            placeholder={`library ExampleMeasure version '1.0.0'
+      <div className="p-4 flex-1 flex flex-col min-h-0">
+        <Textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="flex-1 w-full p-3 font-mono text-sm resize-none border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg"
+          placeholder={`library ExampleMeasure version '1.0.0'
 
 using FHIR version '4.0.1'
 
 define "Initial Population":
   [Patient] P
     where P.gender = 'female'
-      and AgeInYearsAt(end of "Measurement Period") >= 18
 
 define "Denominator":
   "Initial Population"
@@ -113,34 +115,33 @@ define "Numerator":
   "Denominator" D
     with [Observation: "Heart Rate"] O
       such that O.effective during "Measurement Period"`}
-          />
-          
-          <div className="flex justify-between items-center mt-4">
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <i className="fas fa-info-circle"></i>
-              <span>CQL Version 1.5 Support</span>
-            </div>
-            <div className="flex space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={validateCql}
-                disabled={isValidating}
-                className="text-sm"
-              >
-                <CheckCircle className="w-4 h-4 mr-1" />
-                {isValidating ? "Validating..." : "Validate"}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearCql}
-                className="text-sm"
-              >
-                <Trash2 className="w-4 h-4 mr-1" />
-                Clear
-              </Button>
-            </div>
+        />
+
+        <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-100">
+          <div className="flex items-center space-x-2 text-xs text-slate-500">
+            <Info className="w-3.5 h-3.5" />
+            <span>CQL 1.5 Supported</span>
+          </div>
+          <div className="flex space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={validateCql}
+              disabled={isValidating}
+              className="text-xs h-8 border-slate-200"
+            >
+              <CheckCircle className="w-3.5 h-3.5 mr-1" />
+              {isValidating ? "..." : "Validate"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={clearCql}
+              className="text-xs h-8 border-slate-200 text-slate-600"
+            >
+              <Trash2 className="w-3.5 h-3.5 mr-1" />
+              Clear
+            </Button>
           </div>
         </div>
       </div>

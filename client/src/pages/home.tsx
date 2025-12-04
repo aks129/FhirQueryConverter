@@ -7,7 +7,7 @@ import { useCqlEvaluation } from "@/hooks/use-cql-evaluation";
 import { useSqlEvaluation } from "@/hooks/use-sql-evaluation";
 import { FhirBundle } from "@/types/fhir";
 import { sampleCqlCode, diabetesCareBundle } from "@/lib/sample-data";
-import { Play, ServerCog, Stethoscope, Zap, HelpCircle, Bot, ArrowRight } from "lucide-react";
+import { Play, Stethoscope, Zap, HelpCircle, Bot, ArrowRight, Code, Database, Github, FileCode } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 
@@ -122,31 +122,33 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
-      {/* Header - Simplified */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 font-sans flex flex-col">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-3">
-            <div className="flex items-center space-x-3">
-              <Stethoscope className="w-8 h-8 text-blue-600" />
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-sm">
+                <FileCode className="w-6 h-6 text-white" />
+              </div>
               <div>
-                <h1 className="text-lg font-semibold text-gray-900">
+                <h1 className="text-xl font-bold text-slate-900 tracking-tight">
                   CQL to SQL on FHIR
                 </h1>
-                <p className="text-xs text-gray-500">
-                  Convert clinical quality measures to executable SQL
+                <p className="text-sm text-slate-500">
+                  Clinical Quality Language Converter
                 </p>
               </div>
             </div>
-            <nav className="flex items-center space-x-2">
+            <nav className="flex items-center space-x-3">
               <Link href="/e2e-demo">
                 <Button
                   variant="default"
                   size="sm"
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="bg-blue-600 hover:bg-blue-700 shadow-sm"
                   data-testid="button-e2e"
                 >
-                  <Zap className="w-4 h-4 mr-1" />
+                  <Zap className="w-4 h-4 mr-2" />
                   E2E Demo
                 </Button>
               </Link>
@@ -154,19 +156,22 @@ export default function Home() {
                 <Button
                   variant="outline"
                   size="sm"
+                  className="border-slate-300 hover:bg-slate-50"
                   data-testid="button-ai"
                 >
-                  <Bot className="w-4 h-4 mr-1" />
-                  AI
+                  <Bot className="w-4 h-4 mr-2" />
+                  AI Assistant
                 </Button>
               </Link>
               <Link href="/faq">
                 <Button
                   variant="ghost"
                   size="sm"
+                  className="text-slate-600 hover:text-slate-900"
                   data-testid="button-faq"
                 >
-                  <HelpCircle className="w-4 h-4" />
+                  <HelpCircle className="w-4 h-4 mr-1" />
+                  Help
                 </Button>
               </Link>
             </nav>
@@ -175,8 +180,8 @@ export default function Home() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 h-[calc(100vh-140px)]">
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 h-[calc(100vh-180px)]">
           
           {/* Input Panel */}
           <div className="lg:col-span-2 space-y-6">
@@ -252,12 +257,37 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Footer - Minimal */}
-      <footer className="border-t border-gray-200 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <p className="text-xs text-gray-400 text-center">
-            CQL 1.5 + FHIR R4 | Open Quality
-          </p>
+      {/* Footer */}
+      <footer className="bg-white border-t border-slate-200 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0">
+            <div className="flex items-center space-x-4 text-sm text-slate-500">
+              <span className="flex items-center">
+                <Code className="w-4 h-4 mr-1" />
+                CQL 1.5
+              </span>
+              <span className="text-slate-300">|</span>
+              <span className="flex items-center">
+                <Database className="w-4 h-4 mr-1" />
+                FHIR R4
+              </span>
+              <span className="text-slate-300">|</span>
+              <span>SQL on FHIR v2</span>
+            </div>
+            <div className="flex items-center space-x-4">
+              <a
+                href="https://github.com/aks129/FhirQueryConverter"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <Github className="w-5 h-5" />
+              </a>
+              <span className="text-sm text-slate-400">
+                Open Quality Initiative
+              </span>
+            </div>
+          </div>
         </div>
       </footer>
     </div>
