@@ -186,9 +186,36 @@ DiagnosticReport_view AS (
       return `${cteName} AS (\n  SELECT patient_id FROM ${refName}\n)`;
     }
 
+    // Special handling for UnaryExpression (exists) at top level
+    if (define.expression.type === 'UnaryExpression') {
+      const unaryExpr = define.expression as UnaryExpressionNode;
+      if (unaryExpr.operator === 'exists') {
+        const innerSql = this.generateUnaryExpression(unaryExpr);
+        // For exists expressions, we need to select patients where the condition is true
+        return `${cteName} AS (\n  SELECT p.id AS patient_id FROM Patient_view p WHERE ${innerSql}\n)`;
+      }
+    }
+
+    // Special handling for BinaryExpression at top level (boolean conditions)
+    if (define.expression.type === 'BinaryExpression') {
+      const binaryExpr = define.expression as BinaryExpressionNode;
+      // Check if this is a boolean/logical expression (and, or, comparison)
+      if (['and', 'or', '=', '!=', '<', '>', '<=', '>=', '~'].includes(binaryExpr.operator)) {
+        const condition = this.generateBinaryExpression(binaryExpr);
+        // Wrap in a SELECT from Patient_view with WHERE clause
+        return `${cteName} AS (\n  SELECT p.id AS patient_id FROM Patient_view p WHERE ${condition}\n)`;
+      }
+    }
+
     const sqlExpression = this.generateExpression(define.expression, '  ');
 
-    return `${cteName} AS (\n${sqlExpression}\n)`;
+    // Check if the result is already a SELECT statement
+    if (sqlExpression.trim().toUpperCase().startsWith('SELECT')) {
+      return `${cteName} AS (\n${sqlExpression}\n)`;
+    }
+
+    // Otherwise wrap in a SELECT
+    return `${cteName} AS (\n  SELECT p.id AS patient_id FROM Patient_view p WHERE ${sqlExpression}\n)`;
   }
 
   private generateExpression(expr: CqlExpressionNode, indent: string = '  '): string {
@@ -619,13 +646,25 @@ DiagnosticReport_view AS (
   }
 
   private generateUnaryExpression(expr: UnaryExpressionNode): string {
+    // Special handling for EXISTS with identifier operand (reference to another define)
+    if (expr.operator === 'exists' && expr.operand.type === 'Identifier') {
+      const defineName = (expr.operand as IdentifierNode).name.replace(/\s+/g, '');
+      if (this.context.cteNames.has(defineName) || this.context.defines.has((expr.operand as IdentifierNode).name)) {
+        return `EXISTS (SELECT 1 FROM ${defineName})`;
+      }
+    }
+
     const operand = this.generateExpression(expr.operand);
 
     switch (expr.operator) {
       case 'not':
         return `NOT ${operand}`;
       case 'exists':
-        return `EXISTS ${operand}`;
+        // Wrap in parentheses if it's a subquery reference
+        if (operand.includes('SELECT')) {
+          return `EXISTS (${operand})`;
+        }
+        return `EXISTS (SELECT 1 FROM ${operand})`;
       case 'is null':
         return `${operand} IS NULL`;
       case 'is not null':
@@ -839,8 +878,15 @@ DiagnosticReport_view AS (
   }
 
   private generateIdentifier(expr: IdentifierNode): string {
-    // Check if it's a reference to another define
+    // Check if it's a reference to another define (with or without spaces)
     const defineName = expr.name.replace(/\s+/g, '');
+
+    // Check if original name exists in defines map
+    if (this.context.defines.has(expr.name)) {
+      return defineName;
+    }
+
+    // Check if normalized name exists in CTE names
     if (this.context.cteNames.has(defineName)) {
       return defineName;
     }
