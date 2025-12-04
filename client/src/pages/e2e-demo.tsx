@@ -1115,10 +1115,7 @@ SELECT 'numerator', COUNT(DISTINCT patient_id) FROM numerator;`;
       </div>
 
       <div className="text-center mb-8">
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <h1 className="text-3xl font-bold">End-to-End CQL Measure Execution</h1>
-          <Badge variant="secondary">Production-Ready Demo</Badge>
-        </div>
+        <h1 className="text-3xl font-bold mb-4">End-to-End CQL Measure Execution</h1>
         <p className="text-lg text-muted-foreground">
           Real-world workflow: Medplum → NLM VSAC → Databricks → MeasureReport
         </p>
