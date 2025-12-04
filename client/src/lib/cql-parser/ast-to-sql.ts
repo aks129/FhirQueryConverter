@@ -92,13 +92,16 @@ export class AstToSqlTranspiler {
       this.context.defines.set(define.name, define);
     });
 
+    // Topologically sort defines based on dependencies
+    const sortedDefines = this.topologicalSortDefines(library.defines);
+
     const ctes: string[] = [];
 
     // Add base FHIR views
     ctes.push(this.generateBaseFhirViews());
 
-    // Generate CTEs for each define
-    library.defines.forEach(define => {
+    // Generate CTEs for each define in dependency order
+    sortedDefines.forEach(define => {
       this.log(`Converting define "${define.name}" to SQL CTE`);
       const cte = this.generateDefineCte(define);
       ctes.push(cte);
@@ -196,6 +199,107 @@ export class AstToSqlTranspiler {
    */
   private trackIdentifierReference(name: string): void {
     this.context.referencedIdentifiers.add(name);
+  }
+
+  /**
+   * Topologically sort defines so dependencies come before dependents
+   */
+  private topologicalSortDefines(defines: DefineNode[]): DefineNode[] {
+    // Build a map of define name -> define node
+    const defineMap = new Map<string, DefineNode>();
+    defines.forEach(d => defineMap.set(d.name, d));
+
+    // Build dependency graph: define name -> set of define names it depends on
+    const dependencies = new Map<string, Set<string>>();
+    defines.forEach(d => {
+      const deps = this.extractDependencies(d.expression, defineMap);
+      dependencies.set(d.name, deps);
+    });
+
+    // Kahn's algorithm for topological sort
+    const result: DefineNode[] = [];
+    const visited = new Set<string>();
+    const visiting = new Set<string>();
+
+    const visit = (name: string): void => {
+      if (visited.has(name)) return;
+      if (visiting.has(name)) {
+        // Circular dependency - just skip to avoid infinite loop
+        this.log(`Warning: Circular dependency detected involving "${name}"`);
+        return;
+      }
+
+      visiting.add(name);
+
+      const deps = dependencies.get(name) || new Set();
+      deps.forEach(dep => {
+        if (defineMap.has(dep)) {
+          visit(dep);
+        }
+      });
+
+      visiting.delete(name);
+      visited.add(name);
+
+      const define = defineMap.get(name);
+      if (define) {
+        result.push(define);
+      }
+    };
+
+    // Visit all defines
+    defines.forEach(d => visit(d.name));
+
+    return result;
+  }
+
+  /**
+   * Extract define names that an expression depends on
+   */
+  private extractDependencies(expr: CqlExpressionNode, defineMap: Map<string, DefineNode>): Set<string> {
+    const deps = new Set<string>();
+
+    const extract = (e: CqlExpressionNode): void => {
+      switch (e.type) {
+        case 'Identifier':
+          const name = (e as IdentifierNode).name;
+          if (defineMap.has(name)) {
+            deps.add(name);
+          }
+          break;
+        case 'BinaryExpression':
+          const binary = e as BinaryExpressionNode;
+          extract(binary.left);
+          extract(binary.right);
+          break;
+        case 'UnaryExpression':
+          const unary = e as UnaryExpressionNode;
+          extract(unary.operand);
+          break;
+        case 'FunctionCall':
+          const func = e as FunctionCallNode;
+          func.arguments.forEach(arg => extract(arg));
+          break;
+        case 'MemberAccess':
+          const member = e as MemberAccessNode;
+          extract(member.object);
+          break;
+        case 'Query':
+          const query = e as QueryNode;
+          if (query.source.type === 'Identifier') {
+            const srcName = (query.source as IdentifierNode).name;
+            if (defineMap.has(srcName)) {
+              deps.add(srcName);
+            }
+          }
+          if (query.where) extract(query.where);
+          if (query.return) extract(query.return);
+          break;
+      }
+    };
+
+    extract(expr);
+    return deps;
   }
 
   /**
@@ -1034,14 +1138,15 @@ DiagnosticReport_view AS (
     // Track this reference for later validation
     this.trackIdentifierReference(expr.name);
 
-    // Check if original name exists in defines map
+    // Check if original name exists in defines map - return as membership check
     if (this.context.defines.has(expr.name)) {
-      return defineName;
+      // When referencing another define in a WHERE clause, we need to check patient membership
+      return `p.id IN (SELECT patient_id FROM ${defineName})`;
     }
 
-    // Check if normalized name exists in CTE names
+    // Check if normalized name exists in CTE names - return as membership check
     if (this.context.cteNames.has(defineName)) {
-      return defineName;
+      return `p.id IN (SELECT patient_id FROM ${defineName})`;
     }
 
     // Check if it's "Measurement Period" - return as a comment placeholder
