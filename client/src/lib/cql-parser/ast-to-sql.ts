@@ -953,12 +953,24 @@ DiagnosticReport_view AS (
 
       // Temporal expressions parsed as functions
       case 'start of':
-      case 'end of':
-        // These come from the parser's temporal expression handling
+        // Handle start of Measurement Period specially
         if (args.length > 0) {
-          // For now, just return the argument
-          // In full implementation, would extract start/end of period
-          return args[0];
+          const arg = args[0];
+          if (arg.includes('Measurement Period')) {
+            return `'${this.context.measurementPeriod?.start}'`;
+          }
+          return arg;
+        }
+        return 'NULL';
+
+      case 'end of':
+        // Handle end of Measurement Period specially
+        if (args.length > 0) {
+          const arg = args[0];
+          if (arg.includes('Measurement Period')) {
+            return `'${this.context.measurementPeriod?.end}'`;
+          }
+          return arg;
         }
         return 'NULL';
 
@@ -1032,9 +1044,12 @@ DiagnosticReport_view AS (
       return defineName;
     }
 
-    // Check if it's "Measurement Period"
+    // Check if it's "Measurement Period" - return as a comment placeholder
+    // The actual interval handling should be done in the temporal operators (during, in, etc.)
     if (expr.name === 'Measurement Period') {
-      return `Interval[@${this.context.measurementPeriod?.start}, @${this.context.measurementPeriod?.end}]`;
+      // Return NULL for now - the interval should be handled contextually
+      // This identifier shouldn't appear standalone in valid SQL
+      return `NULL /* Measurement Period */`;
     }
 
     // Return the identifier name - if it's missing, it will be caught in detectMissingReferences
