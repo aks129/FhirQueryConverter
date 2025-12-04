@@ -180,11 +180,11 @@ export default function Home() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 h-[calc(100vh-180px)]">
-          
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 h-full">
+
           {/* Input Panel */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 flex flex-col gap-4 h-full overflow-hidden">
             {/* CQL Input Section */}
             <CqlInput
               value={cqlCode}
@@ -192,24 +192,25 @@ export default function Home() {
             />
 
             {/* FHIR Bundle Upload Section */}
-            <div className="space-y-4">
-              <FhirUpload
-                bundle={fhirBundle}
-                onBundleChange={setFhirBundle}
-              />
+            <FhirUpload
+              bundle={fhirBundle}
+              onBundleChange={setFhirBundle}
+            />
 
+            {/* Action Buttons */}
+            <div className="flex-shrink-0 space-y-3">
               {/* Quick Start */}
-              <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-4 border border-purple-200">
+              <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-3 border border-purple-200">
                 <Button
                   onClick={runSampleExample}
                   disabled={cqlLoading || sqlLoading}
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3"
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium"
                 >
                   <Zap className="w-4 h-4 mr-2" />
                   {(cqlLoading || sqlLoading) ? "Running..." : "Quick Start Demo"}
                 </Button>
-                <p className="text-xs text-gray-600 mt-2 text-center">
-                  Load sample CQL + FHIR data, run both evaluations
+                <p className="text-xs text-slate-500 mt-2 text-center">
+                  Load sample CQL + FHIR data
                 </p>
               </div>
 
@@ -229,7 +230,7 @@ export default function Home() {
                   onClick={handleSqlEvaluation}
                   disabled={sqlLoading || !cqlCode.trim() || !fhirBundle}
                   variant="outline"
-                  className="border-green-300 text-green-700 hover:bg-green-50"
+                  className="border-emerald-300 text-emerald-700 hover:bg-emerald-50"
                 >
                   <ArrowRight className="w-4 h-4 mr-1" />
                   {sqlLoading ? "..." : "CQL to SQL"}
@@ -245,7 +246,7 @@ export default function Home() {
           </div>
 
           {/* Output Panel */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-3 h-full overflow-hidden">
             <OutputPanel
               cqlResult={cqlResult}
               sqlResult={sqlResult}

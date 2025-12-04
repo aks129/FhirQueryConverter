@@ -73,7 +73,7 @@ export function CqlInput({ value, onChange, onValidate }: CqlInputProps) {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col" style={{ height: '45%' }}>
+    <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col flex-1 min-h-0">
       <div className="px-5 py-3 border-b border-slate-200 bg-slate-50/50 rounded-t-xl">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">

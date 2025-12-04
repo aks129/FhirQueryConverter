@@ -89,7 +89,7 @@ export function FhirUpload({ bundle, onBundleChange }: FhirUploadProps) {
   const stats = bundle ? getBundleStats(bundle) : null;
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col" style={{ height: '45%' }}>
+    <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col flex-1 min-h-0">
       <div className="px-5 py-3 border-b border-slate-200 bg-slate-50/50 rounded-t-xl">
         <div className="flex items-center space-x-3">
           <div className="flex items-center justify-center w-8 h-8 bg-emerald-100 rounded-lg">
