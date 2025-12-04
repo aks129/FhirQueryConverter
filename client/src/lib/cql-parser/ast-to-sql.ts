@@ -25,6 +25,9 @@ export interface SqlGenerationContext {
   cteNames: Set<string>;
   aliases: Map<string, string>;
   measurementPeriod?: { start: string; end: string };
+  referencedIdentifiers: Set<string>;
+  missingReferences: Set<string>;
+  includedLibraries: string[];
 }
 
 export class AstToSqlTranspiler {
@@ -41,11 +44,19 @@ export class AstToSqlTranspiler {
         start: '2024-01-01T00:00:00Z',
         end: '2024-12-31T23:59:59Z',
       },
+      referencedIdentifiers: new Set(),
+      missingReferences: new Set(),
+      includedLibraries: [],
     };
     this.namingValidator = new CqlNamingValidator();
   }
 
   transpile(library: LibraryNode): string {
+    // Reset context for fresh transpilation
+    this.context.referencedIdentifiers.clear();
+    this.context.missingReferences.clear();
+    this.context.includedLibraries = [];
+
     // Validate naming conventions per HL7 CQL Implementation Guide
     this.namingValidator.clear();
 
@@ -68,6 +79,14 @@ export class AstToSqlTranspiler {
       });
     }
 
+    // Track included libraries (external dependencies)
+    if (library.includes && library.includes.length > 0) {
+      library.includes.forEach(inc => {
+        this.context.includedLibraries.push(inc.library);
+        this.log(`Found included library: ${inc.library} (alias: ${inc.alias})`);
+      });
+    }
+
     // Build defines map
     library.defines.forEach(define => {
       this.context.defines.set(define.name, define);
@@ -85,10 +104,107 @@ export class AstToSqlTranspiler {
       ctes.push(cte);
     });
 
+    // After generating all CTEs, check for missing references
+    this.detectMissingReferences();
+
     // Generate final query
     const finalQuery = this.generateFinalQuery();
 
-    return `-- Generated SQL on FHIR Query from CQL\n-- Using Common Table Expressions (CTEs) for modularity\nWITH ${ctes.join(',\n')}\n${finalQuery}`;
+    // Build the SQL output with disclaimer if needed
+    let sqlOutput = this.generateSqlHeader(library);
+    sqlOutput += `WITH ${ctes.join(',\n')}\n${finalQuery}`;
+
+    return sqlOutput;
+  }
+
+  /**
+   * Generate SQL header with library info and any disclaimers
+   */
+  private generateSqlHeader(library: LibraryNode): string {
+    const lines: string[] = [];
+
+    lines.push(`-- Generated SQL on FHIR Query from CQL`);
+    lines.push(`-- Library: ${library.identifier}${library.version ? ` v${library.version}` : ''}`);
+    lines.push(`-- Using Common Table Expressions (CTEs) for modularity`);
+
+    // Add disclaimer for missing references
+    if (this.context.missingReferences.size > 0) {
+      lines.push('--');
+      lines.push('-- ⚠️  DISCLAIMER: Missing Library References');
+      lines.push('-- This CQL contains references to definitions from external libraries that are not present.');
+      lines.push('-- The following references could not be resolved and have been replaced with placeholder CTEs:');
+
+      const missingList = Array.from(this.context.missingReferences);
+      missingList.forEach(ref => {
+        lines.push(`--   - ${ref}`);
+      });
+
+      if (this.context.includedLibraries.length > 0) {
+        lines.push('--');
+        lines.push('-- External libraries referenced (not loaded):');
+        this.context.includedLibraries.forEach(lib => {
+          lines.push(`--   - ${lib}`);
+        });
+      }
+
+      lines.push('--');
+      lines.push('-- NOTE: To fully evaluate this CQL, import the required library definitions.');
+      lines.push('-- Future versions will support loading multiple CQL libraries as base definitions.');
+      lines.push('--');
+    }
+
+    lines.push('');
+    return lines.join('\n');
+  }
+
+  /**
+   * Detect identifiers that were referenced but not defined
+   */
+  private detectMissingReferences(): void {
+    // Known built-in identifiers and base views that are always available
+    const builtInIdentifiers = new Set([
+      'Patient', 'Observation', 'Condition', 'Procedure',
+      'MedicationRequest', 'Encounter', 'DiagnosticReport',
+      'Patient_view', 'Observation_view', 'Condition_view', 'Procedure_view',
+      'MedicationRequest_view', 'Encounter_view', 'DiagnosticReport_view',
+      'Measurement Period', 'MeasurementPeriod',
+    ]);
+
+    const referencedArray = Array.from(this.context.referencedIdentifiers);
+    for (let i = 0; i < referencedArray.length; i++) {
+      const ref = referencedArray[i];
+      const normalizedRef = ref.replace(/\s+/g, '');
+
+      // Skip if it's a built-in
+      if (builtInIdentifiers.has(ref) || builtInIdentifiers.has(normalizedRef)) {
+        continue;
+      }
+
+      // Skip if it's defined in this library
+      if (this.context.defines.has(ref) || this.context.cteNames.has(normalizedRef)) {
+        continue;
+      }
+
+      // This is a missing reference
+      this.context.missingReferences.add(ref);
+      this.log(`⚠️  Missing reference: "${ref}" - not defined in this library`);
+    }
+  }
+
+  /**
+   * Track an identifier reference for later validation
+   */
+  private trackIdentifierReference(name: string): void {
+    this.context.referencedIdentifiers.add(name);
+  }
+
+  /**
+   * Check if an identifier is a missing reference
+   */
+  private isMissingReference(name: string): boolean {
+    const normalizedName = name.replace(/\s+/g, '');
+    return this.context.missingReferences.has(name) ||
+           this.context.missingReferences.has(normalizedName);
   }
 
   private generateBaseFhirViews(): string {
@@ -181,7 +297,19 @@ DiagnosticReport_view AS (
 
     // Special handling for Identifier expressions at the top level
     if (define.expression.type === 'Identifier') {
-      const refName = (define.expression as IdentifierNode).name.replace(/\s+/g, '');
+      const identExpr = define.expression as IdentifierNode;
+      const refName = identExpr.name.replace(/\s+/g, '');
+
+      // Track the reference
+      this.trackIdentifierReference(identExpr.name);
+
+      // Check if this is a reference to an undefined/external define
+      if (!this.context.defines.has(identExpr.name) && !this.context.cteNames.has(refName)) {
+        this.log(`  -> Missing reference: "${identExpr.name}" (external library define)`);
+        // Generate a placeholder CTE that returns no results
+        return `${cteName} AS (\n  -- Placeholder: References external define "${identExpr.name}" which is not present\n  SELECT NULL AS patient_id WHERE 1=0\n)`;
+      }
+
       this.log(`  -> Identifier reference to "${refName}"`);
       return `${cteName} AS (\n  SELECT patient_id FROM ${refName}\n)`;
     }
@@ -648,10 +776,20 @@ DiagnosticReport_view AS (
   private generateUnaryExpression(expr: UnaryExpressionNode): string {
     // Special handling for EXISTS with identifier operand (reference to another define)
     if (expr.operator === 'exists' && expr.operand.type === 'Identifier') {
-      const defineName = (expr.operand as IdentifierNode).name.replace(/\s+/g, '');
-      if (this.context.cteNames.has(defineName) || this.context.defines.has((expr.operand as IdentifierNode).name)) {
+      const identExpr = expr.operand as IdentifierNode;
+      const defineName = identExpr.name.replace(/\s+/g, '');
+
+      // Track this reference
+      this.trackIdentifierReference(identExpr.name);
+
+      // Check if it's a known reference
+      if (this.context.cteNames.has(defineName) || this.context.defines.has(identExpr.name)) {
         return `EXISTS (SELECT 1 FROM ${defineName})`;
       }
+
+      // It's a missing reference - return FALSE (no results from missing define)
+      this.log(`  -> EXISTS on missing reference: "${identExpr.name}"`);
+      return `FALSE /* Missing reference: ${identExpr.name} */`;
     }
 
     const operand = this.generateExpression(expr.operand);
@@ -881,6 +1019,9 @@ DiagnosticReport_view AS (
     // Check if it's a reference to another define (with or without spaces)
     const defineName = expr.name.replace(/\s+/g, '');
 
+    // Track this reference for later validation
+    this.trackIdentifierReference(expr.name);
+
     // Check if original name exists in defines map
     if (this.context.defines.has(expr.name)) {
       return defineName;
@@ -896,7 +1037,8 @@ DiagnosticReport_view AS (
       return `Interval[@${this.context.measurementPeriod?.start}, @${this.context.measurementPeriod?.end}]`;
     }
 
-    return expr.name;
+    // Return the identifier name - if it's missing, it will be caught in detectMissingReferences
+    return defineName;
   }
 
   private generateLiteral(expr: LiteralNode): string {
@@ -966,5 +1108,26 @@ SELECT
 
   getLogs(): string[] {
     return this.logs;
+  }
+
+  /**
+   * Get list of missing references found during transpilation
+   */
+  getMissingReferences(): string[] {
+    return Array.from(this.context.missingReferences);
+  }
+
+  /**
+   * Get list of included libraries that are not loaded
+   */
+  getIncludedLibraries(): string[] {
+    return [...this.context.includedLibraries];
+  }
+
+  /**
+   * Check if there are any missing references
+   */
+  hasMissingReferences(): boolean {
+    return this.context.missingReferences.size > 0;
   }
 }
