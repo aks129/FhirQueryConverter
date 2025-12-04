@@ -371,6 +371,24 @@ export class CqlParser {
           object: expr,
           member,
         };
+      } else if (this.match(TokenType.AS)) {
+        // Type casting: expr as Type
+        // Skip the type for now (could be simple identifier or generic like Interval<DateTime>)
+        if (this.check(TokenType.IDENTIFIER)) {
+          this.advance(); // consume type name
+          // Handle generic types like Interval<DateTime>
+          if (this.match(TokenType.LESS_THAN)) {
+            // Skip until matching >
+            let depth = 1;
+            while (!this.isAtEnd() && depth > 0) {
+              if (this.check(TokenType.LESS_THAN)) depth++;
+              if (this.check(TokenType.GREATER_THAN)) depth--;
+              this.advance();
+            }
+          }
+        }
+        // Return the expression without the cast for now
+        // (we could add a CastNode type later if needed)
       } else if (this.check(TokenType.LEFT_PAREN) && expr.type === 'Identifier') {
         // Function call
         this.advance();
