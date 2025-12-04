@@ -1,0 +1,11 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Custom overrides
+*.js text
+*.ts text
+*.tsx text
+*.json text
+*.md text
+*.css text
+*.html text

@@ -32,8 +32,9 @@ import { ExecutionDashboard } from "@/components/execution/ExecutionDashboard";
 import { SqlTranslation } from "@/components/sql/SqlTranslation";
 import { DatabaseConnect } from "@/components/database/DatabaseConnect";
 import { WriteBackPanel } from "@/components/writeback/WriteBackPanel";
-import { ViewManagement } from "@/components/views/ViewManagement";
+import { ViewManagement } from "@/components/database/ViewManagement";
 import { ComparisonDashboard } from "@/components/comparison/ComparisonDashboard";
+import FiremetricsExplorer from "./firemetrics";
 import { useAppStore, WorkflowStep } from "@/store/app-store";
 import {
   Server,
@@ -47,8 +48,10 @@ import {
   AlertCircle,
   CheckCircle2,
   BarChart3,
+  Sparkles,
 } from "lucide-react";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Define workflow steps
 const WORKFLOW_STEPS: Step[] = [
@@ -99,6 +102,12 @@ const WORKFLOW_STEPS: Step[] = [
     label: "View Defs",
     description: "Manage views",
     icon: Eye,
+  },
+  {
+    id: "firemetrics",
+    label: "FireMetrics",
+    description: "AI Exploration",
+    icon: Sparkles,
   },
   {
     id: "comparison",
@@ -187,6 +196,12 @@ export default function Workflow() {
         return <WriteBackStep />;
       case "view-management":
         return <ViewManagementStep />;
+      case "firemetrics":
+        return (
+          <div className="min-h-[600px]">
+            <FiremetricsExplorer />
+          </div>
+        );
       case "comparison":
         return <ComparisonStep />;
       default:
@@ -195,26 +210,32 @@ export default function Workflow() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 font-sans">
       {/* Header */}
-      <header className="border-b bg-card">
+      <header className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200/60 shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex items-center gap-4"
+            >
               <Link href="/">
-                <Button variant="outline" size="sm" className="gap-2">
+                <Button variant="ghost" size="sm" className="gap-2 hover:bg-slate-100 rounded-full">
                   <ArrowLeft className="h-4 w-4" />
                   Back to Home
                 </Button>
               </Link>
               <div>
-                <h1 className="text-2xl font-bold">FHIR Query Converter</h1>
-                <p className="text-sm text-muted-foreground">
+                <h1 className="text-2xl font-bold text-slate-900 tracking-tight">FHIR Query Converter</h1>
+                <p className="text-sm text-slate-500 font-medium">
                   Production Workflow
                 </p>
               </div>
-            </div>
-            <Badge variant="outline">Phase 8 - Alpha v0.3</Badge>
+            </motion.div>
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 px-3 py-1">
+              Phase 8 - Alpha v0.3
+            </Badge>
           </div>
         </div>
       </header>
@@ -222,24 +243,33 @@ export default function Workflow() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         {/* Error Display */}
-        {errors.length > 0 && (
-          <Alert variant="destructive" className="mb-6">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription className="flex items-center justify-between">
-              <span>
-                {errors.length} error(s) occurred. Please review and fix.
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearErrors}
-                className="ml-4"
-              >
-                Clear
-              </Button>
-            </AlertDescription>
-          </Alert>
-        )}
+        <AnimatePresence>
+          {errors.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mb-6 overflow-hidden"
+            >
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="flex items-center justify-between">
+                  <span>
+                    {errors.length} error(s) occurred. Please review and fix.
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={clearErrors}
+                    className="ml-4 bg-white/20 hover:bg-white/30 border-white/40 text-white"
+                  >
+                    Clear
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Stepper Navigation */}
         <div className="mb-8">
@@ -261,7 +291,18 @@ export default function Workflow() {
         </div>
 
         {/* Step Content */}
-        <div className="mb-8">{renderStepContent()}</div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={workflow.currentStep}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+            className="mb-8 min-h-[400px]"
+          >
+            {renderStepContent()}
+          </motion.div>
+        </AnimatePresence>
 
         {/* Navigation Buttons */}
         <StepNavigation
