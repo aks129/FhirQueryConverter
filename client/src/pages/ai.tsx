@@ -5,6 +5,7 @@
  * for natural language-driven quality measure analytics
  */
 
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,9 +30,44 @@ import {
   Target,
   GitBranch,
 } from "lucide-react";
+import { AgentCommandCenter } from "@/components/showcase/AgentCommandCenter";
 import { AgentChat } from "@/components/ai/AgentChat";
 
 export default function AI() {
+  const [isAgentActive, setIsAgentActive] = useState(false);
+  const [agentLogs, setAgentLogs] = useState<any[]>([]);
+
+  // Simulate agent activity for the demo
+  useEffect(() => {
+    const demoLogs = [
+      { id: "1", timestamp: Date.now(), type: "thought", message: "Initializing healthcare analytics agent..." },
+      { id: "2", timestamp: Date.now() + 1000, type: "thought", message: "Listening for user queries..." },
+      { id: "3", timestamp: Date.now() + 3000, type: "thought", message: "User query received: 'Find diabetic patients with A1C > 9'" },
+      { id: "4", timestamp: Date.now() + 4000, type: "tool", message: "Connecting to Medplum FHIR Server..." },
+      { id: "5", timestamp: Date.now() + 5000, type: "result", message: "Connected. Schema loaded." },
+      { id: "6", timestamp: Date.now() + 6000, type: "thought", message: "Generating CQL for diabetes definition..." },
+      { id: "7", timestamp: Date.now() + 7000, type: "tool", message: "Invoking CQL Engine..." },
+      { id: "8", timestamp: Date.now() + 8000, type: "thought", message: "Translating CQL to SQL for scale..." },
+      { id: "9", timestamp: Date.now() + 9000, type: "tool", message: "Executing on Databricks..." },
+      { id: "10", timestamp: Date.now() + 10000, type: "result", message: "Found 142 patients matching criteria." },
+      { id: "11", timestamp: Date.now() + 11000, type: "tool", message: "Visualizing with FireMetrics..." },
+    ];
+
+    let currentIndex = 0;
+    const interval = setInterval(() => {
+      if (currentIndex < demoLogs.length) {
+        setAgentLogs(prev => [...prev, demoLogs[currentIndex]]);
+        setIsAgentActive(true);
+        currentIndex++;
+      } else {
+        setIsAgentActive(false);
+        clearInterval(interval);
+      }
+    }, 1500);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
@@ -95,10 +131,10 @@ export default function AI() {
               </div>
             </div>
 
-            {/* Right Column: Interactive Chat Demo */}
-            <div className="relative">
+            {/* Right Column: Agent Command Center */}
+            <div className="relative h-[500px] w-full">
               <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl blur opacity-20"></div>
-              <AgentChat />
+              <AgentCommandCenter isActive={isAgentActive} logs={agentLogs} />
             </div>
           </div>
         </div>

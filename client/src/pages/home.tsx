@@ -7,14 +7,16 @@ import { useCqlEvaluation } from "@/hooks/use-cql-evaluation";
 import { useSqlEvaluation } from "@/hooks/use-sql-evaluation";
 import { FhirBundle } from "@/types/fhir";
 import { sampleCqlCode, diabetesCareBundle } from "@/lib/sample-data";
-import { Play, Zap, HelpCircle, Bot, ArrowRight, Code, Database, Github, FileCode } from "lucide-react";
+import { Play, Zap, HelpCircle, Bot, ArrowRight, Code, Database, Github, FileCode, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { StoryMode } from "@/components/showcase/StoryMode";
 
 export default function Home() {
   const [cqlCode, setCqlCode] = useState(sampleCqlCode);
   const [fhirBundle, setFhirBundle] = useState<FhirBundle | null>(null);
+  const [showStoryMode, setShowStoryMode] = useState(false);
 
   const {
     evaluateCql,
@@ -124,6 +126,11 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 font-sans flex flex-col">
+      {/* Story Mode Overlay */}
+      <AnimatePresence>
+        {showStoryMode && <StoryMode onClose={() => setShowStoryMode(false)} />}
+      </AnimatePresence>
+
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200/60 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -147,6 +154,17 @@ export default function Home() {
               </div>
             </motion.div>
             <nav className="flex items-center space-x-3">
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowStoryMode(true)}
+                  className="bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100 hover:border-purple-300 rounded-full px-4 mr-2"
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Watch Demo
+                </Button>
+              </motion.div>
               <Link href="/e2e-demo">
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Button

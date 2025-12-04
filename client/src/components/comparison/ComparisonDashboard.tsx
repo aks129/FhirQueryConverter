@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { useAppStore } from "@/store/app-store";
 import { cn } from "@/lib/utils";
+import { ScaleVisualizer } from "@/components/showcase/ScaleVisualizer";
 
 interface ComparisonData {
   cql: {
@@ -225,6 +226,11 @@ export function ComparisonDashboard() {
             </>
           )}
         </div>
+      </div>
+
+      {/* Scale Visualizer (Keynote Feature) */}
+      <div className="mb-8">
+        <ScaleVisualizer />
       </div>
 
       {/* Error Alert */}
